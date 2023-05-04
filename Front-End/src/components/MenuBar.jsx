@@ -67,7 +67,7 @@ export default function MenuBar() {
         {
           label: "Visitas",
           icon: "pi pi-fw pi-pencil",
-          command: () => Router.push("/visitas"),
+          command: () => Router.push("/gestion/visitas"),
         },
         {
           rol: ["A", "M"],
@@ -77,12 +77,12 @@ export default function MenuBar() {
             {
               label: "Servicios",
               icon: "pi pi-fw pi-calendar-times",
-              command: () => Router.push("/estadisticas/servicios"),
+              command: () => Router.push("/gestion/estadisticas/servicios"),
             },
             {
               label: "Visitas",
               icon: "pi pi-fw pi-calendar-times",
-              command: () => Router.push("/estadisticas/visitas"),
+              command: () => Router.push("/gestion/estadisticas/visitas"),
             },
           ],
         },
@@ -97,7 +97,8 @@ export default function MenuBar() {
           label: "Usuarios",
           icon: "pi pi-fw pi-users",
           command: () => Router.push("/administracion/usuarios"),
-        },{
+        },
+        {
           label: "Servicios",
           icon: "pi pi-fw pi-users",
           command: () => Router.push("/administracion/servicios"),
