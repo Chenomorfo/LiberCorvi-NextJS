@@ -7,7 +7,7 @@ router.put("/login", async (req, res) => {
   const { user, pwd } = req.body;
 
   const query = await pool.query(
-    `SELECT * FROM Usuarios 
+    `SELECT * FROM usuarios 
         WHERE UserName = ? AND BINARY Password = ?;`,
     [user, pwd]
   );
@@ -16,14 +16,14 @@ router.put("/login", async (req, res) => {
 });
 
 router.get("/consultar", async (req, res) => {
-  const query = await pool.query("SELECT * FROM Usuarios;");
+  const query = await pool.query("SELECT * FROM usuarios;");
 
   res.send(query);
 });
 
 router.get("/consultar/roles", async (req, res) => {
   const query = await pool
-    .query("SELECT Rol as rol FROM Usuarios GROUP BY rol;")
+    .query("SELECT Rol as rol FROM usuarios GROUP BY rol;")
     .catch((err) => err);
   res.send(query);
 });
@@ -36,7 +36,7 @@ router.post("/registrar", async (req, res) => {
     return;
   }
 
-  await pool.query("INSERT INTO Usuarios VALUES (?)", [
+  await pool.query("INSERT INTO usuarios VALUES (?)", [
     [null, User, Pwd, Nick, Rol],
   ]);
 
@@ -46,7 +46,7 @@ router.post("/registrar", async (req, res) => {
 router.delete("/eliminar", async (req, res) => {
   const { id } = req.body;
 
-  await pool.query("DELETE FROM Usuarios WHERE Id = ?", [id]);
+  await pool.query("DELETE FROM usuarios WHERE Id = ?", [id]);
 
   res.send({ msg: "Usuario eliminado con exito" });
 });

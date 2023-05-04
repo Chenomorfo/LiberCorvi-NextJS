@@ -3,7 +3,7 @@ const router = Router();
 
 import AlumnosJSON from "../localDB/alumnos.json" assert { type: "json" };
 import FichaLibros from "../localDB/fichalibros.json" assert { type: "json" };
-import FichaEjemplares from "../localDB/FichaEjemplares.json" assert { type: "json" };
+import FichaEjemplares from "../localDB/fichaejemplares.json" assert { type: "json" };
 
 import DB from "../db.js";
 

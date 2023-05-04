@@ -1,11 +1,11 @@
 const TotalPoblacionPorMes = () => {
   return `SELECT YEAR(Fecha) as Year, MONTH(Fecha) as Month, SUM(Cant_Hombres) as Hombres, SUM(Cant_Mujeres) as Mujeres 
-          FROM RegistroVisitas GROUP BY Year, Month ORDER BY Year, Month`;
+          FROM registrovisitas GROUP BY Year, Month ORDER BY Year, Month`;
 };
 
 const TotalPoblacionPorMesPorAño = (Year = 2012) => {
   return `SELECT YEAR(Fecha) as Year, MONTH(Fecha) as Month, SUM(Cant_Hombres) as Hombres, SUM(Cant_Mujeres) as Mujeres 
-            FROM RegistroVisitas WHERE YEAR(Fecha) = ${Year} GROUP BY Year, Month ORDER BY Year, Month`;
+            FROM registrovisitas WHERE YEAR(Fecha) = ${Year} GROUP BY Year, Month ORDER BY Year, Month`;
 };
 
 const TotalPoblacionPorTrimestre = () => {
@@ -13,7 +13,7 @@ const TotalPoblacionPorTrimestre = () => {
                  QUARTER(Fecha) as TriMestre, 
                  SUM(Cant_Hombres) as Hombres, 
                  SUM(Cant_Mujeres) as Mujeres 
-          FROM RegistroVisitas
+          FROM registrovisitas
           GROUP BY Year, TriMestre 
           ORDER BY Year, TriMestre;`;
 };
@@ -23,7 +23,7 @@ const TotalPoblacionPorTrimestrePorAño = (Year = 2012) => {
                    QUARTER(Fecha) as TriMestre, 
                    SUM(Cant_Hombres) as Hombres, 
                    SUM(Cant_Mujeres) as Mujeres 
-            FROM RegistroVisitas WHERE YEAR(Fecha) = ${Year} 
+            FROM registrovisitas WHERE YEAR(Fecha) = ${Year} 
             GROUP BY Year, TriMestre 
             ORDER BY Year, TriMestre;`;
 };
@@ -32,7 +32,7 @@ const TotalPoblacionAnual = () => {
   return `SELECT YEAR(Fecha) as Year, 
                  SUM(Cant_Hombres) as Hombres, 
                  SUM(Cant_Mujeres) as Mujeres 
-          FROM RegistroVisitas 
+          FROM registrovisitas 
           GROUP BY Year 
           ORDER BY Year`;
 };

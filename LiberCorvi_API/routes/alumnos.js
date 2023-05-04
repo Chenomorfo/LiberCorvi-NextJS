@@ -16,7 +16,7 @@ router.get("/buscar", async (req, res) => {
   res.send(Alumno);
 });
 
-router.get("/filtrar", async (req, res) => {
+router.get("/consultar", async (req, res) => {
   const { NC } = req.query;
 
   const Alumnos = await DB.alumnos.findAll({
@@ -29,6 +29,20 @@ router.get("/filtrar", async (req, res) => {
   });
 
   res.send(Alumnos);
+});
+
+router.get("/agrupar", async (req, res) => {
+  const { list } = req.query;
+
+  const Lista = await DB.alumnos.findAll({
+    where: {
+      [Op.in]: {
+        Numero_Control: list,
+      },
+    },
+  });
+
+  res.send(Lista);
 });
 
 export default router;

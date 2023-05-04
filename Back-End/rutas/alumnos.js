@@ -32,7 +32,7 @@ router.get("/agrupar", async (req, res) => {
   const query = await pool.query(
     `SELECT Numero_Control      as code ,
             ${NombreCompleto}   as name 
-    FROM Alumnos a WHERE Numero_Control IN (?)`,
+    FROM alumnos a WHERE Numero_Control IN (?)`,
     [list]
   );
 

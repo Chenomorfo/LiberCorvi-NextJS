@@ -13,9 +13,10 @@ try {
   await sequelize.sync();
   console.log("DB Succefully Connected");
 } catch (error) {
-  if (error.name === "SequelizeConnectionRefusedError")
+  if (error.name === "SequelizeConnectionRefusedError") {
     console.log("Please, connect XAMPP");
-
+    throw Error("XAMPP IS NOT ENABLED")
+  }
   if (error.name === "SequelizeConnectionError") {
     sequelize = DB_CONN();
     await sequelize.query("CREATE DATABASE Biblioteca_API");

@@ -7,7 +7,7 @@ const BuscarAlumno = (Ncontrol) => {
     	${NombreCompleto} as NombreCompleto,
         a.Sexo,
         a.Especialidad
-	FROM Alumnos a WHERE a.Numero_Control LIKE '%${Ncontrol}%'`;
+	FROM alumnos a WHERE a.Numero_Control LIKE '%${Ncontrol}%'`;
 };
 
 const EncontrarAlumno = (Ncontrol) => {
@@ -17,7 +17,7 @@ const EncontrarAlumno = (Ncontrol) => {
           CONCAT(a.Nombre," ",a.Apellido_Paterno," ",a.Apellido_Materno) as NombreCompleto,
           a.Sexo,
           a.Especialidad
-      FROM Alumnos a WHERE a.Numero_Control = '${Ncontrol}'`;
+      FROM alumnos a WHERE a.Numero_Control = '${Ncontrol}'`;
 };
 
 module.exports = {

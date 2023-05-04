@@ -11,7 +11,7 @@ const {
 } = require("../Queries/ConsultaRegistros");
 
 router.get("/visitas", async (req, res) => {
-  const query = await pool.query("SELECT * FROM RegistroVisitas");
+  const query = await pool.query("SELECT * FROM registrovisitas");
   res.send(query);
 });
 
@@ -19,7 +19,7 @@ router.get("/visitas/consultar", async (req, res) => {
   const { year, month, day, turno } = req.query;
   const query = await pool
     .query(
-      "SELECT * FROM RegistroVisitas WHERE YEAR(Fecha) = ? AND MONTH(Fecha) = ? AND DAY(Fecha) = ? AND Turno = ?",
+      "SELECT * FROM registrovisitas WHERE YEAR(Fecha) = ? AND MONTH(Fecha) = ? AND DAY(Fecha) = ? AND Turno = ?",
       [year, month, day, turno]
     )
     .catch((err) => err);
@@ -35,7 +35,7 @@ router.post("/visitas/", async (req, res) => {
   }-${nuevaFecha.getDate()}`;
 
   await pool.query(
-    "INSERT INTO RegistroVisitas (Fecha, Cant_Hombres, Cant_Mujeres,Turno) VALUES (?)",
+    "INSERT INTO registrovisitas (Fecha, Cant_Hombres, Cant_Mujeres,Turno) VALUES (?)",
     [[nuevaFecha, 0, 0, rol]]
   );
 
@@ -48,7 +48,7 @@ router.put("/visitas/actualizar", async (req, res) => {
 
   const query = await pool
     .query(
-      `UPDATE RegistroVisitas SET Cant_Hombres = ?, Cant_Mujeres = ? 
+      `UPDATE registrovisitas SET Cant_Hombres = ?, Cant_Mujeres = ? 
         WHERE YEAR(Fecha) = ? AND MONTH(Fecha) = ? AND DAY(Fecha) = ? AND Turno = ?`,
       [countH, countM, year, month, day, rol]
     )

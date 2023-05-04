@@ -6,7 +6,7 @@ const ConsultarLibro = (FichaLibro) => {
                 fl.Clasificacion, 
                 fl.Editorial,
                 fl.Edicion 
-            FROM FichaLibros fl 
+            FROM fichalibros fl 
             WHERE fl.Numero_Ficha = '${FichaLibro}'; `;
 };
 
@@ -19,8 +19,8 @@ const ConsultarFicha = (Ficha) => {
                   fl.Contenido,
                   fl.Editorial,
                   fl.Edicion
-          FROM 	FichaEjemplares fe JOIN 
-          FichaLibros 	fl 	ON fl.Numero_Ficha = fe.Numero_Ficha
+          FROM 	fichaejemplares fe JOIN 
+          fichalibros 	fl 	ON fl.Numero_Ficha = fe.Numero_Ficha
           WHERE fe.Numero_Adquisicion = ${Ficha}`;
 };
 
@@ -31,7 +31,7 @@ const MostrarEjemplares = (filtro) => {
                   as NumeroEjemplar, 
                   fe.Numero_Adquisicion,
                   fe.Disponible 
-          FROM    FichaEjemplares fe 
+          FROM    fichaejemplares fe 
           Where   fe.Numero_Ficha = '${filtro}' 
           ORDER BY  fe.Numero_Ficha,
                     fe.Numero_Adquisicion ASC;`;
@@ -47,7 +47,7 @@ const MostrarPrestamos = () => {
                 rp.FechaDevolucion,
                 rp.RenovacionDisponible as Renovacion,
                 rp.DevolucionDisponible as Devolucion 
-          FROM RegistroPrestamos rp JOIN Alumnos a 
+          FROM registroprestamos rp JOIN alumnos a 
           ON a.Numero_Control = rp.NumeroControl_Estudiante
           WHERE rp.DevolucionDisponible > 0;`;
 };

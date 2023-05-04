@@ -15,7 +15,7 @@ router.get("/consultar/libro", async (req, res) => {
                 fl.Clasificacion,  
                 fl.Titulo, 
                 fl.Autor 
-        FROM FichaLibros fl 
+        FROM fichalibros fl 
         Where  fl.Numero_Ficha LIKE '%${filtro ?? ""}%' 
             OR fl.Titulo       LIKE '%${filtro ?? ""}%' 
             OR fl.Autor        LIKE '%${filtro ?? ""}%' 
@@ -62,10 +62,10 @@ router.post("/registrar/prestamo", async (req, res) => {
 
   const registroServicio = [Estudiante, new Date(FechaEntrega), Tipo, Usuario];
 
-  await pool.query("INSERT INTO RegistroPrestamos VALUES (?)", [registroLibro]);
+  await pool.query("INSERT INTO registroprestamos VALUES (?)", [registroLibro]);
 
   await pool
-    .query("INSERT INTO RegistroServicios VALUES (?)", [registroServicio])
+    .query("INSERT INTO registroservicios VALUES (?)", [registroServicio])
     .catch((err) => err);
 
   await pool.query(
@@ -82,7 +82,7 @@ router.put("/prestamo/renovar/:id", async (req, res) => {
   const { FechaDevolucion } = req.body;
 
   await pool.query(
-    "UPDATE RegistroPrestamos SET RenovacionDisponible = 0, FechaDevolucion = ? WHERE Id_Prestamo = ?",
+    "UPDATE registroprestamos SET RenovacionDisponible = 0, FechaDevolucion = ? WHERE Id_Prestamo = ?",
     [new Date(FechaDevolucion), id]
   );
 
@@ -93,7 +93,7 @@ router.put("/prestamo/devolver/:id", async (req, res) => {
   const { id } = req.params;
 
   const query = await pool.query(
-    `UPDATE RegistroPrestamos SET DevolucionDisponible = 0 WHERE Id_Prestamo = ?;`,
+    `UPDATE registroprestamos SET DevolucionDisponible = 0 WHERE Id_Prestamo = ?;`,
     [id]
   );
 

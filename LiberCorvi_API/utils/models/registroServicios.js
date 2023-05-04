@@ -14,7 +14,7 @@ const Registro_Servicios = DB.define(
     },
     Fecha: {
       type: DataTypes.DATE,
-      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
     Usuario_Registro: DataTypes.CHAR(2),
   },

@@ -1,53 +1,98 @@
-const { Router } = require("express");
+import { Router } from "express";
 const router = Router();
-import { ConsultarFicha } from "../Queries/BusquedaLibros";
-const pool = require("../dbConn");
+import { Op } from "sequelize";
 
-router.get("/consultar", async (req, res) => {
-  const { ficha } = req.query;
-  const query = await pool
-    .query(ConsultarFicha(ficha))
-    .catch((err) => err.json());
+import DB from "../db.js";
+import { addDays } from "../utils/functions.js";
 
-  res.send(query);
+//Not yer
+router.get("/consultar/libro", async (req, res) => {
+  const { filter } = req.query;
+  const Fichas = await DB.fichaLibros.findAll({
+    limit: 50,
+    where: {
+      [Op.or]: [
+        {
+          Titulo: {
+            [Op.like]: `%${filter}%` ?? "",
+          },
+        },
+        {
+          Autor: {
+            [Op.like]: `%${filter}%` ?? "",
+          },
+        },
+        {
+          Contenido: {
+            [Op.like]: `%${filter}%` ?? "",
+          },
+        },
+      ],
+    },
+  });
+
+  res.send(Fichas);
 });
 
-router.get("/general", async (req, res) => {
-  const { filtro } = req.query;
-  const query = await pool.query(
-    `SELECT fl.Numero_Ficha, fl.Clasificacion, fl.Titulo, fl.Autor FROM FichaLibros fl Where fl.Numero_Ficha LIKE '%${filtro}%' OR fl.Titulo LIKE '%${filtro}%' OR fl.Autor LIKE '%${filtro}%' limit 30;`
-  );
+router.get("/consultar/ejemplar", async (req, res) => {
+  const { libro } = req.query;
+  const Ejemplar = await DB.fichaEjemplares.findOne({
+    where: {
+      Numero_Adquisicion: libro,
+    },
+  });
 
-  res.send(query);
+  res.send(Ejemplar);
 });
 
-router.put("/prestamo/renovar/:id", async (req, res) => {
+//Completed and Tested
+router.get("/consultar/prestamo", async (req, res) => {
+  const Prestamos = await DB.registroPrestamos.findAll();
+
+  res.send(Prestamos);
+});
+
+router.post("/registrar/prestamo", async (req, res) => {
+  const { ficha, ejemplar, nc, Tipo, Usuario } = req.body;
+
+  const Prestamo = await DB.registroPrestamos
+    .create({
+      Libro_Numero_Ficha: ficha,
+      Libro_Numero_Ejemplar: ejemplar,
+      Estudiante_Numero_Control: nc,
+    })
+    .catch((e) => ({
+      Error: "Peticion rechazada",
+      Description:
+        "Uno o mas valores ingresados no fueron aceptados por falta de coincidencias",
+    }));
+
+  res.send(Prestamo);
+});
+
+router.put("/renovar/prestamo/:id", async (req, res) => {
   const { id } = req.params;
 
-  const { FechaDevolucion } = req.body;
+  const Prestamo = await DB.registroPrestamos.findOne({ where: { Id: id } });
 
-  await pool.query(
-    "UPDATE RegistroPrestamos SET RenovacionDisponible = 0, FechaDevolucion = ? WHERE Id_Prestamo = ?",
-    [new Date(FechaDevolucion), id]
-  );
+  Prestamo.Renovacion = false;
+  Prestamo.Fecha_Devolucion = addDays(new Date(), 2);
 
-  res.send({ msg: "Dato actualizado" });
+  await Prestamo.save();
+
+  res.send(Prestamo);
 });
 
-router.put("/prestamo/devolver/:id", async (req, res) => {
+router.put("/devolver/prestamo/:id", async (req, res) => {
   const { id } = req.params;
 
-  const query = await pool.query(
-    `UPDATE RegistroPrestamos SET DevolucionDisponible = 0 WHERE Id_Prestamo = ?;`,
-    [id]
-  );
+  const Prestamo = await DB.registroPrestamos.findOne({ where: { Id: id } });
 
-  /* await pool.query(
-      "UPDATE FichaEjemplares fe SET fe.Disponible = 1 WHERE fe.Numero_Adquisicion = ?",
-      [Ejemplar]
-    ); */
+  Prestamo.Devolucion = false;
 
-  res.send({ msg: "Dato actualizado" });
+  await Prestamo.save();
+
+  res.send(Prestamo);
 });
 
-module.exports = router;
+export default router;

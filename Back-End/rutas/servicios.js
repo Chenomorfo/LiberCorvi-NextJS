@@ -5,7 +5,7 @@ const pool = require("../dbConn");
 
 router.get("/consultar/todos", async (req, res) => {
   const query = await pool
-    .query("SELECT * FROM Servicio")
+    .query("SELECT * FROM servicio")
     .catch((err) => err);
 
   res.send(query);
@@ -18,7 +18,7 @@ router.get("/consultar/areas", async (req, res) => {
     return;
   }
   const query = await pool
-    .query("SELECT * FROM Servicio WHERE Area = ?", [area])
+    .query("SELECT * FROM servicio WHERE Area = ?", [area])
     .catch((err) => err);
 
   res.send(query);
@@ -34,7 +34,7 @@ router.get("/consultar/servicios", async (req, res) => {
   const query = await pool
     .query(
       `SELECT * FROM 
-                Servicio 
+                servicio 
         WHERE   Area = ? AND Numero = ?`,
       [area, numero]
     )
@@ -45,7 +45,7 @@ router.get("/consultar/servicios", async (req, res) => {
 
 router.get("/consultar/nombres", async (req, res) => {
   const query = await pool.query(
-    "SELECT rs.Servicio FROM RegistroServicios rs GROUP by rs.Servicio;"
+    "SELECT rs.servicio FROM registroservicios rs GROUP by rs.servicio;"
   );
   res.send(query);
 });
@@ -59,7 +59,7 @@ router.post("/registrar", async (req, res) => {
   });
 
   await pool
-    .query("INSERT INTO RegistroServicios VALUES ?", [newLista])
+    .query("INSERT INTO registroservicios VALUES ?", [newLista])
     .catch((err) => console.log(err));
 
   res.send("Datos actualizados");
@@ -75,7 +75,7 @@ router.put("/actualizar", async (req, res) => {
   const { lista } = req.body;
 
   await pool
-    .query("UPDATE Servicio SET Lista = ? WHERE Area = ? AND Numero = ?", [
+    .query("UPDATE servicio SET Lista = ? WHERE Area = ? AND Numero = ?", [
       lista ? lista.toString() : null,
       area,
       numero,

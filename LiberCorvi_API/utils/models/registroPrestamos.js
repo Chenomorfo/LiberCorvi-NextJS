@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
 import DB from "../conn.js";
-
+import { addDays } from "../functions.js";
 const Registro_Prestamos = DB.define(
   "Registro_Prestamos",
   {
@@ -23,26 +23,24 @@ const Registro_Prestamos = DB.define(
     },
     Fecha_Adquisicion: {
       type: DataTypes.DATE,
-      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
     Fecha_Devolucion: {
       type: DataTypes.DATE,
-      allowNull: false,
+      defaultValue: addDays(new Date(), 2),
     },
     Renovacion: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
+      defaultValue: true,
     },
     Devolucion: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
+      defaultValue: true,
     },
   },
   {
     timestamps: false,
-    freezeTableName: true,
   }
 );
-
 
 export default Registro_Prestamos;
