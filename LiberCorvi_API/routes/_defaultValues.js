@@ -66,7 +66,7 @@ router.get("/servicios", async (req, res) => {
 //Completed and Tested
 
 router.get("/alumnos", async (req, res) => {
-  await DB.alumnos.destroy({ truncate: true });
+  //await DB.alumnos.destroy({ truncate: true });
 
   await DB.alumnos.bulkCreate(AlumnosJSON);
 
@@ -85,7 +85,7 @@ router.get("/fichaLibros", async (req, res) => {
 });
 
 router.get("/fichaEjemplares", async (req, res) => {
-  await DB.fichaEjemplares.destroy({ truncate: true });
+  //await DB.fichaEjemplares.destroy({ truncate: true });
   const divider = Math.ceil(FichaEjemplares.length / 10);
 
   for (let i = 0; i < 10; i++) {

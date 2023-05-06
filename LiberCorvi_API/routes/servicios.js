@@ -4,16 +4,19 @@ const router = Router();
 import DB from "../db.js";
 
 //In progress
+
+//Completed and Tesed
+
 router.get("/consultar/todos", async (req, res) => {
   const Servicios = await DB.servicios.findAll();
   res.send(Servicios);
 });
 
 router.get("/consultar/area", async (req, res) => {
-  const { area } = req.query;
+  const { name } = req.query;
   const Servicios = await DB.servicios.findAll({
     where: {
-      Nombre: area,
+      Nombre: name ?? null,
     },
   });
 
@@ -21,10 +24,10 @@ router.get("/consultar/area", async (req, res) => {
 });
 
 router.get("/consultar/servicio", async (req, res) => {
-  const { area, numero } = req.query;
+  const { name, num } = req.query;
   const Servicios = await DB.servicios.findOne({
     where: {
-      [Op.and]: [{ Nombre: area }, { Numero: numero }],
+      [Op.and]: [{ Nombre: name }, { Numero: num }],
     },
   });
 
@@ -47,33 +50,34 @@ router.post("/registrar", async (req, res) => {
     lista.map((item) => ({
       Numero_Control: item,
       Servicio: area,
-      Usuario_Registro: usuario,
+      Usuario_Registro: usuario ?? null,
     }))
   );
 
   res.send(Servicio);
 });
+
 router.put("/actualizar", async (req, res) => {
-  const { area, numero } = req.query;
+  const { name, num } = req.query;
 
   const { lista } = req.body;
 
   const Servicio = await DB.servicios
-    .findOne({
-      where: {
-        [Op.and]: [{ Nombre: area }, { Numero: numero }],
-      },
-    })
+    .update(
+      { Lista: lista.toString() },
+      {
+        where: {
+          [Op.and]: [{ Nombre: name }, { Numero: num }],
+        },
+      }
+    )
     .catch((e) => ({
       Error: "Servicio Inexistente",
       Description:
         "El servicio seleccionado no existe, esta deshabilitado o se encuentra en mantenimieto",
     }));
 
-  if (!Servicio.Error) Servicio.Lista = lista.toString();
-
   res.send(Servicio);
 });
 
-//Completed and Tesed
 export default router;

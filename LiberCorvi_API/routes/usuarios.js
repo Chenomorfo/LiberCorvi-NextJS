@@ -1,41 +1,70 @@
-const { Router } = require("express");
+import { Router } from "express";
 const router = Router();
+import { Op } from "sequelize";
 
-const pool = require("../dbConn");
+import DB from "../db.js";
+
+//In progress
+
+//Completed and tested
+
+router.get("/consultar", async (req, res) => {
+  const Usuarios = await DB.usuarios.findAll();
+
+  res.send(Usuarios);
+});
+
+router.get("/consultar/roles", async (req, res) => {
+  const Usuarios = await DB.usuarios.findAll({
+    attributes: ["Rol"],
+  });
+
+  res.send(Usuarios);
+});
+
+router.post("/registrar", async (req, res) => {
+  const { User, Nick, Pwd, Rol } = req.body;
+
+  const Usuario = await DB.usuarios
+    .create({
+      Usuario: User,
+      Password: Pwd,
+      Nombre: Nick,
+      Rol: Rol,
+    })
+    .catch((e) => ({
+      Error: "Error in register",
+      Message:
+        "The user you try to register is wrong, check if you miss any field",
+    }));
+
+  res.send(Usuario);
+});
+
+router.delete("/eliminar/:id", async (req, res) => {
+  const { id } = req.params;
+
+  const Usuario = await DB.usuarios
+    .destroy({
+      where: {
+        Id: id,
+      },
+    })
+    .then((e) => ({ Msg: "User Eliminated" }));
+
+  res.send(Usuario);
+});
 
 router.put("/login", async (req, res) => {
   const { user, pwd } = req.body;
 
-  const query = await pool.query(
-    "SELECT * FROM `Usuarios` WHERE UserName = ? AND BINARY Password = ?;",
-    [user, pwd]
-  );
+  const Usuario = await DB.usuarios.findOne({
+    where: {
+      [Op.and]: [{ Usuario: user }, { Password: pwd }],
+    },
+  });
 
-  res.send(query);
+  res.send(Usuario);
 });
 
-router.get("/list", async (req, res) => {
-  const query = await pool.query("SELECT * FROM `Usuarios`;");
-
-  res.send(query);
-});
-
-router.post("/register", async (req, res) => {
-  const { User, Nick, Pwd, Rol } = req.body;
-
-  await pool.query("INSERT INTO Usuarios VALUES (?)", [
-    [null, User, Pwd, Nick, Rol],
-  ]);
-
-  res.send({ msg: "success" });
-});
-
-router.delete("/delete", async (req, res) => {
-  const { id } = req.body;
-
-  await pool.query("DELETE FROM Usuarios WHERE Id = ?", [id]);
-
-  res.send({ msg: "success" });
-});
-
-module.exports = router;
+export default router;

@@ -10,7 +10,10 @@ const Registro_Visitas = DB.define(
     },
     Cantidad_Hombres: DataTypes.INTEGER,
     Cantidad_Mujeres: DataTypes.INTEGER,
-    Turno: DataTypes.CHAR(2),
+    Turno: {
+      type: DataTypes.ENUM(["A", "M", "SM", "SV"]),
+      allowNull: false,
+    },
   },
   {
     timestamps: false,

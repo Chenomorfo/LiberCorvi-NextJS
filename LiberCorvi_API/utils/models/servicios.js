@@ -12,7 +12,7 @@ const Servicio = DB.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    Lista: DataTypes.TEXT,
+    Lista: DataTypes.STRING(),
   },
   {
     timestamps: false,

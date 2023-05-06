@@ -7,6 +7,7 @@ const Alumnos = DB.define(
     Numero_Control: {
       type: DataTypes.STRING(12),
       allowNull: false,
+      primaryKey: true,
     },
     Nombre: {
       type: DataTypes.STRING(50),

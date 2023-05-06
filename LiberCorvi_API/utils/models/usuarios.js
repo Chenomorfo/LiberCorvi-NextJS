@@ -22,7 +22,7 @@ const Usuario = DB.define(
       allowNull: false,
     },
     Rol: {
-      type: DataTypes.CHAR(2),
+      type: DataTypes.ENUM(["A", "M", "SM", "SV"]),
       allowNull: false,
     },
   },

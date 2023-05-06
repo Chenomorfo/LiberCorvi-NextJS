@@ -1,13 +1,14 @@
 import { DataTypes } from "sequelize";
 import DB from "../conn.js";
+import Alumnos from "./alumnos.js";
 
 const Registro_Servicios = DB.define(
   "Registro_Servicios",
   {
-    Numero_Control: {
+    /* Numero_Control: {
       type: DataTypes.STRING(12),
       allowNull: false,
-    },
+    }, */
     Servicio: {
       type: DataTypes.STRING(30),
       allowNull: false,

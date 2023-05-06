@@ -1,87 +1,123 @@
 import { Router } from "express";
-import { Op } from "sequelize";
+import { Op, literal } from "sequelize";
 const router = Router();
 
 import DB from "../db.js";
 
-router.get("/encontrar/:ficha", async (req, res) => {
-  const { ficha } = req.params;
+//Completed and tested
 
-  /* Find One FichaEjemplar Numero_Ejemplar Join FichaLibro */
+router.get("/estadisticas/servicios", async (req, res) => {
+  const { fecha, service, turno } = req.query;
 
-  /* res.send(Ficha); */
+  const Servicios = await DB.registroServicios
+    .findAll({
+      attributes: [],
+      include: {
+        model: DB.alumnos,
+        as: "Alumno",
+        required: true,
+        attributes: [
+          "Especialidad",
+          [literal(`SUM(IF(Sexo > 0,1,0))`), "Mujeres"],
+          [literal(`SUM(IF(Sexo = 0,1,0))`), "Hombres"],
+        ],
+      },
+      where: {
+        [Op.and]: [
+          Array.isArray(service) ? { Fecha: { [Op.between]: fecha } } : null,
+          service
+            ? Array.isArray(service)
+              ? { Servicio: { [Op.in]: service } }
+              : { Servicio: service }
+            : null,
+          turno ? { Usuario_Registro: turno } : null,
+        ],
+      },
+      group: "Especialidad",
+      raw: true,
+    })
+    .catch((e) => ({
+      Error: "Failed to Select List",
+      Msg: "Check the syntax",
+    }));
+
+  res.send(Servicios);
 });
 
-/* router.get("/get/consultarEjemplares/:ficha", async (req, res) => {
-  const { ficha } = req.params;
-  const query = await pool.query(MostrarEjemplares(ficha));
-  res.send(query);
-}); */
+router.get("/estadisticas/visitas", async (req, res) => {
+  const { fecha, turno } = req.query;
 
-/* router.get("/get/consultarPrestamos", async (req, res) => {
-  const query = await pool.query(MostrarPrestamos());
+  const Visita = await DB.registroVisitas
+    .findAll({
+      where: {
+        [Op.and]: [
+          Array.isArray(fecha) ? { Fecha: { [Op.between]: fecha } } : null,
+          turno ? { Turno: turno } : null,
+        ],
+      },
+    })
+    .catch((e) => ({
+      Error: "Error in Dates range",
+      Msg: "The Dates setted are invalid",
+    }));
 
-  res.send(query);
-}); */
+  res.send(Visita);
+});
 
-/* router.post("/post/registrarPrestamo", async (req, res) => {
-  const { Libro, Ejemplar, Estudiante, FechaEntrega, FechaDevolucion } =
-    req.body;
+router.get("/visitas", async (req, res) => {
+  const Visitas = await DB.registroVisitas.findAll();
 
-  const registroLibro = [
-    null,
-    Libro,
-    Ejemplar,
-    Estudiante,
-    new Date(FechaEntrega),
-    new Date(FechaDevolucion),
-    1,
-    1,
-  ];
+  res.send(Visitas);
+});
 
-  const registroServicio = [Estudiante, new Date(FechaEntrega), "Prestamo"];
+router.get("/visitas/consultar", async (req, res) => {
+  const { year, month, day, turno } = req.query;
 
-  await pool.query("INSERT INTO RegistroPrestamos VALUES (?)", [registroLibro]);
+  const Visitas = await DB.registroVisitas.findAll({
+    where: {
+      [Op.and]: [
+        { Fecha: new Date(year, month, day) },
+        turno ? { Turno: turno } : null,
+      ],
+    },
+  });
 
-  await pool
-    .query("INSERT INTO RegistroServicios VALUES (?)", [registroServicio])
-    .catch((err) => err);
+  res.send(Visitas);
+});
 
-  await pool.query(
-    "UPDATE FichaEjemplares fe SET fe.Disponible = 0 WHERE fe.Numero_Adquisicion = ?",
-    [Ejemplar]
-  ); 
+router.post("/visitas/registrar", async (req, res) => {
+  const { Fecha, rol } = req.body;
 
-  res.send({ msg: "Datos insertados" });
-});*/
+  const Visita = await DB.registroVisitas
+    .create({
+      Fecha: new Date(Fecha),
+      Turno: rol ?? null,
+    })
+    .catch((e) => ({
+      Error: "Error in Date register",
+      Msg: "The Date setted is Invalid or the Rol is not exists",
+    }));
 
-/* router.put("/put/actualizarPrestamo/renovar/:id", async (req, res) => {
-  const { id } = req.params;
+  res.send(Visita);
+});
 
-  const { FechaDevolucion } = req.body;
+router.put("/visitas/actualizar", async (req, res) => {
+  const { year, month, day } = req.query;
+  const { countM, countH, rol } = req.body;
 
-  await pool.query(
-    "UPDATE RegistroPrestamos SET RenovacionDisponible = 0, FechaDevolucion = ? WHERE Id_Prestamo = ?",
-    [new Date(FechaDevolucion), id]
+  const Visita = await DB.registroVisitas.update(
+    {
+      Cantidad_Hombres: countH,
+      Cantidad_Mujeres: countM,
+    },
+    {
+      where: {
+        [Op.and]: [{ Fecha: new Date(year, month, day) }, { Turno: rol ?? "" }],
+      },
+    }
   );
 
-  res.send({ msg: "Dato actualizado" });
-}); */
+  res.send(Visita);
+});
 
-/* router.put("/put/actualizarPrestamo/devolver/:id", async (req, res) => {
-  const { id } = req.params;
-
-  const query = await pool.query(
-    `UPDATE RegistroPrestamos SET DevolucionDisponible = 0 WHERE Id_Prestamo = ?;`,
-    [id]
-  );
-
-   await pool.query(
-    "UPDATE FichaEjemplares fe SET fe.Disponible = 1 WHERE fe.Numero_Adquisicion = ?",
-    [Ejemplar]
-  ); 
-
-  res.send({ msg: "Dato actualizado" });
-}); 
-*/
 export default router;

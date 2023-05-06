@@ -21,6 +21,17 @@ DB.registroVisitas = registroVisitas;
 DB.servicios = servicios;
 DB.usuarios = usuarios;
 
-await CONN.sync();
+//Associations
+/* Alumnos.hasMany(registroServicios, {
+  foreignKey: "Numero_Control",
+  as: "Servicios",
+}); */
+registroServicios.belongsTo(Alumnos, {
+  foreignKey: "Numero_Control",
+  as: "Alumno",
+});
+
+//Sync DB
+await CONN.sync({ force: false });
 
 export default DB;

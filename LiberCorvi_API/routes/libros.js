@@ -1,11 +1,32 @@
 import { Router } from "express";
 const router = Router();
-import { Op } from "sequelize";
 
+import { DataTypes, Op, QueryTypes, Sequelize } from "sequelize";
 import DB from "../db.js";
+
 import { addDays } from "../utils/functions.js";
 
 //Not yer
+
+//Can do better
+router.get("/consultar/ejemplar", async (req, res) => {
+  const { libro } = req.query;
+  const Ejemplar = await DB.conn.query(
+    `SELECT * FROM ${DB.fichaEjemplares.tableName} ta JOIN ${DB.fichaLibros.tableName} tb 
+    ON ta.Numero_Ficha = tb.Numero_Ficha
+    WHERE ta.Numero_Adquisicion = :buscar_libro`,
+    {
+      type: QueryTypes.SELECT,
+      replacements: {
+        buscar_libro: libro,
+      },
+    }
+  );
+
+  res.send(Ejemplar);
+});
+
+//Completed and Tested
 router.get("/consultar/libro", async (req, res) => {
   const { filter } = req.query;
   const Fichas = await DB.fichaLibros.findAll({
@@ -34,18 +55,6 @@ router.get("/consultar/libro", async (req, res) => {
   res.send(Fichas);
 });
 
-router.get("/consultar/ejemplar", async (req, res) => {
-  const { libro } = req.query;
-  const Ejemplar = await DB.fichaEjemplares.findOne({
-    where: {
-      Numero_Adquisicion: libro,
-    },
-  });
-
-  res.send(Ejemplar);
-});
-
-//Completed and Tested
 router.get("/consultar/prestamo", async (req, res) => {
   const Prestamos = await DB.registroPrestamos.findAll();
 
