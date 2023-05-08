@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Op } from "sequelize";
+import { Op, literal } from "sequelize";
 import DB from "../db.js";
 
 const router = Router();
@@ -17,12 +17,28 @@ router.get("/buscar", async (req, res) => {
   const { nc } = req.query;
 
   const Alumno = await DB.alumnos.findOne({
+    attributes: [
+      "Numero_Control",
+      "Especialidad",
+      [
+        DB.conn.fn(
+          "concat",
+          DB.conn.col("Nombre"),
+          " ",
+          DB.conn.col("Apellido_Paterno"),
+          " ",
+          DB.conn.col("Apellido_Materno")
+        ),
+        "Nombre",
+      ],
+    ],
     where: {
       Numero_Control: nc ?? "",
     },
   });
-
-  res.send(Alumno);
+  if (Alumno) res.send(Alumno);
+  else
+    res.send({ Error: "Error de Busqueda", Msg: "No se encontro al alumno" });
 });
 
 router.get("/consultar", async (req, res) => {

@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
-import Router from "next/router";
-import { AlumnosAPI, LibrosAPI } from "@/scripts/apiConn";
+import { AlumnosAPI, LibrosAPI, ServiciosAPI } from "@/scripts/apiConn";
 
 //PrimeReact
 import { AutoComplete } from "primereact/autocomplete";
@@ -10,45 +9,84 @@ import { InputText } from "primereact/inputtext";
 
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
+import { verifyUser } from "@/scripts/auths";
+import { showInfo } from "@/scripts/alerts";
 
-export async function getServerSideProps(context) {
-  const { query } = context;
-  const res = await fetch(
-    LibrosAPI + "/consultar/ejemplar?ficha=" + query.ficha
-  );
-  const data = await res.json();
-
-  return { props: { data: data[0] ?? {} } };
-}
-
-function Prestamos({ data }) {
+function Prestamos() {
   const [Estudiante, setEstudiante] = useState("");
-  const [DatosEstudiante, setDatosEstudiante] = useState({});
+  const [Datos, setDatos] = useState({});
   const [ListaAlumnos, setListaAlumnos] = useState([]);
 
-  const [Libro, setLibro] = useState("");
+  const [Libro, setLibro] = useState({});
+  const [Filtro, setFiltro] = useState("");
 
   const toast = useRef(null);
 
   const Search = (event) => {
-    fetch(AlumnosAPI + `/consultar?Ncontrol=${event.query}`)
+    fetch(AlumnosAPI + `/consultar?nc=${event.query}`)
       .then((data) => data.json())
       .then((data) =>
         setListaAlumnos(data.map(({ Numero_Control }) => Numero_Control))
       );
   };
-  const EncontrarAlumno = async (alumno) => {
-    const res = await fetch(AlumnosAPI + `/buscar?Ncontrol=${alumno}`);
+
+  const EncontrarAlumno = async (nc) => {
+    const res = await fetch(AlumnosAPI + `/buscar?nc=${nc}`);
     const data = await res.json();
 
-    if (data.length) setDatosEstudiante(data[0]);
-    else setDatosEstudiante({});
+    if (!data.Error) setDatos(data);
+    else setDatos({});
+  };
+
+  const EncontrarLibro = (value) => {
+    fetch(LibrosAPI + "/consultar/ejemplar?libro=" + value)
+      .then((data) => data.json())
+      .then((data) => {
+        if (data.length) setLibro(data[0]);
+        else setLibro({});
+      });
+  };
+
+  const RegistrarPrestamo = async (esInterno = false) => {
+    if (Object.keys(Libro).length === 0 || Object.keys(Datos).length === 0) {
+      toast.current.show(
+        showInfo("¿Necesitas un Tip?", "Necesita tener un alumno y un libro")
+      );
+    } else {
+      await fetch(LibrosAPI + "/registrar/prestamo", {
+        method: "POST",
+        body: JSON.stringify({
+          ficha: Libro.Numero_Ficha,
+          ejemplar: Libro.Numero_Adquisicion,
+          nc: Datos.Numero_Control,
+        }),
+        headers: { "Content-type": "application/json" },
+      });
+
+      const servicio = esInterno ? "Prestamo_Interno" : "Prestamo_Externo";
+
+      const user = await verifyUser();
+
+      await fetch(ServiciosAPI + "/registrar?area=" + servicio, {
+        method: "POST",
+        body: JSON.stringify({
+          lista: [Datos.Numero_Control],
+          usuario: user.Rol.Code,
+        }),
+        headers: { "Content-type": "application/json" },
+      });
+
+      setDatos({});
+      setEstudiante("");
+      setLibro({});
+      setFiltro("");
+    }
   };
 
   return (
     <>
       <Toast ref={toast} />
-      <div className="grid grid-cols-4 gap-8">
+      <section className="grid grid-cols-4 gap-8">
         <div className="grid gap-4 h-48">
           <AutoComplete
             value={Estudiante}
@@ -66,10 +104,7 @@ function Prestamos({ data }) {
             <span className="p-inputgroup-addon">
               <i className="pi pi-user"></i>
             </span>
-            <InputText
-              placeholder="Nombre"
-              value={DatosEstudiante.NombreCompleto ?? ""}
-            />
+            <InputText placeholder="Nombre" value={Datos.Nombre ?? ""} />
           </div>
           <div style={{ height: "75px" }} className="p-inputgroup">
             <span className="p-inputgroup-addon">
@@ -77,35 +112,41 @@ function Prestamos({ data }) {
             </span>
             <InputText
               placeholder="Especialidad"
-              value={DatosEstudiante.Especialidad ?? ""}
+              value={Datos.Especialidad ?? ""}
             />
           </div>
           <div className="grid grid-flow-col gap-2 h-19">
-            <Button label="Prestamo Interno" onClick={() => null} />
-            <Button label="Prestamo Externo" onClick={() => null} />
+            <Button
+              label="Prestamo Interno"
+              onClick={() => RegistrarPrestamo(true)}
+            />
+            <Button
+              label="Prestamo Externo"
+              onClick={() => RegistrarPrestamo()}
+            />
           </div>
         </div>
 
         <div className="grid col-span-3 gap-4">
           <AutoComplete
             style={{ height: "75px" }}
-            value={Libro}
+            value={Filtro}
             placeholder="Buscar Ficha"
             onChange={(e) => {
-              setLibro(e.value);
-              Router.push("/libros/prestamos?ficha=" + e.value);
+              setFiltro(e.value);
+              EncontrarLibro(e.value);
             }}
           />
-          <Fieldset legend={data.Autor}>
-            <h2>{data.Titulo}</h2>
-            <p style={{ textAlign: "justify" }}>{data.Contenido}</p>
-            <h4 style={{ textAlign: "right" }}>{data.Clasificacion}</h4>
+          <Fieldset legend={Libro.Autor}>
+            <h2>{Libro.Titulo}</h2>
+            <p style={{ textAlign: "justify" }}>{Libro.Contenido}</p>
+            <h4 style={{ textAlign: "right" }}>{Libro.Clasificacion}</h4>
             <h5 style={{ textAlign: "right" }}>
-              {data.Editorial} {data.Edicion}
+              {Libro.Editorial} {Libro.Edicion}
             </h5>
           </Fieldset>
         </div>
-      </div>
+      </section>
     </>
   );
 }

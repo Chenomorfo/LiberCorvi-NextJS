@@ -6,6 +6,11 @@ import FichaLibros from "../localDB/fichalibros.json" assert { type: "json" };
 import FichaEjemplares from "../localDB/fichaejemplares.json" assert { type: "json" };
 
 import DB from "../db.js";
+import { verifyToken } from "../utils/controllers/authToken.js";
+
+router.get("/ping", verifyToken, async (req, res) => {
+  res.send({ msg: "Pong" });
+});
 
 router.get("/users", async (req, res) => {
   await DB.usuarios.destroy({ truncate: true });
@@ -14,7 +19,7 @@ router.get("/users", async (req, res) => {
     Usuario: "admin",
     Password: "admin",
     Nombre: "Cheno",
-    Rol: "A",
+    Rol: 1,
   });
 
   res.send({ msg: "Usuarios creados" });
@@ -63,6 +68,20 @@ router.get("/servicios", async (req, res) => {
 
   res.send({ msg: "Servicios creados" });
 });
+
+router.get("/roles", async (req, res) => {
+  //await DB.alumnos.destroy({ truncate: true });
+
+  await DB.roles.bulkCreate([
+    { Nombre: "Administrador", Code: "A" },
+    { Nombre: "Moderador", Code: "M" },
+    { Nombre: "Servicio Matutino", Code: "SM" },
+    { Nombre: "Servicio Vespertino", Code: "SV" },
+  ]);
+
+  res.send({ msg: "Roles creados" });
+});
+
 //Completed and Tested
 
 router.get("/alumnos", async (req, res) => {

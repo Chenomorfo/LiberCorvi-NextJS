@@ -29,34 +29,42 @@ router.get("/consultar/ejemplar", async (req, res) => {
 //Completed and Tested
 router.get("/consultar/libro", async (req, res) => {
   const { filter } = req.query;
-  const Fichas = await DB.fichaLibros.findAll({
-    limit: 50,
-    where: {
-      [Op.or]: [
-        {
-          Titulo: {
-            [Op.like]: `%${filter}%` ?? "",
+  const Fichas = await DB.fichaLibros.findAll(
+    filter != ""
+      ? {
+          limit: 50,
+          where: {
+            [Op.or]: [
+              {
+                Titulo: {
+                  [Op.like]: `%${filter}%`,
+                },
+              },
+              {
+                Autor: {
+                  [Op.like]: `%${filter}%`,
+                },
+              },
+              {
+                Contenido: {
+                  [Op.like]: `%${filter}%`,
+                },
+              },
+            ],
           },
-        },
-        {
-          Autor: {
-            [Op.like]: `%${filter}%` ?? "",
-          },
-        },
-        {
-          Contenido: {
-            [Op.like]: `%${filter}%` ?? "",
-          },
-        },
-      ],
-    },
-  });
+        }
+      : { limit: 30 }
+  );
 
   res.send(Fichas);
 });
 
 router.get("/consultar/prestamo", async (req, res) => {
-  const Prestamos = await DB.registroPrestamos.findAll();
+  const Prestamos = await DB.registroPrestamos.findAll({
+    where: {
+      Devolucion: 1,
+    },
+  });
 
   res.send(Prestamos);
 });

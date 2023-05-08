@@ -1,26 +1,35 @@
-export const showWarn = (msg) => {
-  toast.current.show({
+export const showWarn = (warn, msg) => {
+  return {
     severity: "warn",
-    summary: "Advertencia",
+    summary: warn,
     detail: msg,
     life: 3000,
-  });
+  };
 };
 
-export const showSuccess = (msg) => {
-  toast.current.show({
+export const showSuccess = (success, msg) => {
+  return {
     severity: "success",
-    summary: "Exito",
+    summary: success,
     detail: msg,
     life: 3000,
-  });
+  };
 };
 
-export const showError = (msg) => {
-  toast.current.show({
+export const showError = (error, msg) => {
+  return {
     severity: "error",
-    summary: "Error",
+    summary: error,
     detail: msg,
     life: 3000,
-  });
+  };
+};
+
+export const showInfo = (error, msg) => {
+  return {
+    severity: "info",
+    summary: error,
+    detail: msg,
+    life: 3000,
+  };
 };

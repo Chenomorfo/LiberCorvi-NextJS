@@ -7,7 +7,7 @@ function Laptops() {
 
   return (
     <ServiciosLayout>
-      <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-1">
+      <div className="grid gmd:grid-cols-2 xl:grid-cols-4 gap-1">
         {areas.map((n, i) => (
           <CartaServicioIndividual key={n} numero={i + 1} servicio="Laptop" />
         ))}

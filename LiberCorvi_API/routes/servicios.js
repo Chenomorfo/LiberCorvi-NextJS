@@ -24,20 +24,26 @@ router.get("/consultar/area", async (req, res) => {
 });
 
 router.get("/consultar/servicio", async (req, res) => {
-  const { name, num } = req.query;
-  const Servicios = await DB.servicios.findOne({
-    where: {
-      [Op.and]: [{ Nombre: name }, { Numero: num }],
-    },
-  });
+  const { service, num } = req.query;
+
+  const Servicios = await DB.servicios
+    .findOne({
+      where: {
+        [Op.and]: [{ Nombre: service }, { Numero: num }],
+      },
+    })
+    .catch((e) => ({
+      Error: "Servicio no encontrado",
+      Msg: "El servicio no existe",
+    }));
 
   res.send(Servicios);
 });
 
 router.get("/consultar/nombres", async (req, res) => {
-  const Servicios = await DB.servicios.findAll({
-    attributes: ["Nombre"],
-    group: "Nombre",
+  const Servicios = await DB.registroServicios.findAll({
+    attributes: ["Servicio"],
+    group: "Servicio",
   });
   res.send(Servicios);
 });
@@ -58,16 +64,16 @@ router.post("/registrar", async (req, res) => {
 });
 
 router.put("/actualizar", async (req, res) => {
-  const { name, num } = req.query;
+  const { area, num } = req.query;
 
   const { lista } = req.body;
 
   const Servicio = await DB.servicios
     .update(
-      { Lista: lista.toString() },
+      { Lista: lista == null ? null : lista.toString() },
       {
         where: {
-          [Op.and]: [{ Nombre: name }, { Numero: num }],
+          [Op.and]: [{ Nombre: area }, { Numero: num }],
         },
       }
     )

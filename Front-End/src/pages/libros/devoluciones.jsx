@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Router from "next/router";
+
 //PrimeReact
 import { AutoComplete } from "primereact/autocomplete";
 import { InputText } from "primereact/inputtext";
@@ -18,36 +18,40 @@ export async function getServerSideProps(context) {
 
 function Devoluciones({ data }) {
   const [Alumno, setAlumno] = useState("");
-  const [DatosEstudiante, setDatosEstudiante] = useState({});
+  const [DataAlumno, setDataAlumno] = useState({});
   const [ListaAlumnos, setListaAlumnos] = useState([]);
 
-  const RenovarLibro = async (IdRegistro) => {
-    await fetch(LibrosAPI + `/prestamo/renovar/${IdRegistro}`, {
+  const [Prestamos, setPrestamos] = useState(data);
+
+  const RenovarLibro = async (Id) => {
+    await fetch(LibrosAPI + `/renovar/prestamo/${Id}`, {
       method: "PUT",
-      body: JSON.stringify({ FechaDevolucion: addDays(new Date(), 2) }),
-      headers: { "Content-type": "application/json" },
     });
-    Router.push("/libros/devoluciones");
+
+    const res = await fetch(LibrosAPI + "/consultar/prestamo");
+    setPrestamos(await res.json());
   };
 
-  const DevolverLibro = async (IdRegistro) => {
-    await fetch(LibrosAPI + `/prestamo/devolver/${IdRegistro}`, {
+  const DevolverLibro = async (Id) => {
+    await fetch(LibrosAPI + `/devolver/prestamo/${Id}`, {
       method: "PUT",
-      headers: { "Content-type": "application/json" },
     });
-    Router.push("/libros/devoluciones");
+
+    const res = await fetch(LibrosAPI + "/consultar/prestamo");
+    setPrestamos(await res.json());
   };
 
-  const EncontrarAlumno = async (alumno) => {
-    const res = await fetch(AlumnosAPI + `/buscar?Ncontrol=${alumno}`);
+  const EncontrarAlumno = async (nc) => {
+    const res = await fetch(AlumnosAPI + `/buscar?nc=${nc}`);
     const data = await res.json();
 
-    if (data.length) setDatosEstudiante(data[0]);
-    else setDatosEstudiante({});
+    console.log(data);
+    if (!data.Error) setDataAlumno(data);
+    else setDataAlumno({});
   };
 
   const Search = (event) => {
-    fetch(AlumnosAPI + `/consultar?Ncontrol=${event.query}`)
+    fetch(AlumnosAPI + `/consultar?nc=${event.query}`)
       .then((data) => data.json())
       .then((data) =>
         setListaAlumnos(data.map(({ Numero_Control }) => Numero_Control))
@@ -73,10 +77,7 @@ function Devoluciones({ data }) {
           <span className="p-inputgroup-addon">
             <i className="pi pi-user"></i>
           </span>
-          <InputText
-            placeholder="Nombre"
-            value={DatosEstudiante.NombreCompleto ?? ""}
-          />
+          <InputText placeholder="Nombre" value={DataAlumno.Nombre ?? ""} />
         </div>
         <div style={{ height: "75px" }} className="p-inputgroup">
           <span className="p-inputgroup-addon">
@@ -84,20 +85,20 @@ function Devoluciones({ data }) {
           </span>
           <InputText
             placeholder="Especialidad"
-            value={DatosEstudiante.Especialidad ?? ""}
+            value={DataAlumno.Especialidad ?? ""}
           />
         </div>
       </section>
 
-      <DataTable value={data} className="col-span-3">
-        <Column field="Estudiante" header="# Control" />
-        <Column field="Nombre" header="Nombre" />
-        <Column field="FichaEjemplar" header="# Ficha" />
+      <DataTable value={Prestamos} className="col-span-3">
+        <Column field="Estudiante_Numero_Control" header="# Control" />
+        <Column field="Estudiante_Numero_Control" header="Nombre" />
+        <Column field="Libro_Numero_Ficha" header="# Ficha" />
         <Column
-          field="FechaAdquisicion"
+          field="Fecha_Adquisicion"
           header="Fecha Adquisicion"
-          body={({ FechaAdquisicion }) =>
-            new Date(FechaAdquisicion).toLocaleDateString("es-MX", {
+          body={({ Fecha_Adquisicion }) =>
+            new Date(Fecha_Adquisicion).toLocaleDateString("es-MX", {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -105,10 +106,10 @@ function Devoluciones({ data }) {
           }
         />
         <Column
-          field="FechaDevolucion"
+          field="Fecha_Devolucion"
           header="Fecha Devolucion"
-          body={({ FechaDevolucion }) =>
-            new Date(FechaDevolucion).toLocaleDateString("es-MX", {
+          body={({ Fecha_Devolucion }) =>
+            new Date(Fecha_Devolucion).toLocaleDateString("es-MX", {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -116,20 +117,17 @@ function Devoluciones({ data }) {
           }
         />
         <Column
-          body={({ Id_Prestamo, Renovacion }) => (
+          body={({ Id, Renovacion }) => (
             <Button
               label="Renovar"
               disabled={Renovacion == 0}
-              onClick={() => RenovarLibro(Id_Prestamo)}
+              onClick={() => RenovarLibro(Id)}
             />
           )}
         />
         <Column
-          body={({ Id_Prestamo }) => (
-            <Button
-              label="Devolver"
-              onClick={() => DevolverLibro(Id_Prestamo)}
-            />
+          body={({ Id }) => (
+            <Button label="Devolver" onClick={() => DevolverLibro(Id)} />
           )}
         />
       </DataTable>

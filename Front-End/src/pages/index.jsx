@@ -4,6 +4,9 @@ import { Password } from "primereact/password";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
+import { showError, showInfo, showSuccess, showWarn } from "@/scripts/alerts";
+import { UsuariosAPI } from "@/scripts/apiConn";
+import Router from "next/router";
 
 export default function Home() {
   const [valuePassword, setValuePassword] = useState("");
@@ -11,37 +14,36 @@ export default function Home() {
 
   const toast = useRef(null);
 
-  const IniciarSesion = () => {
-    if (isAuth) {
-      showWarn("El usuario ya esta registrado");
-      return;
-    }
-
+  const IniciarSesion = async () => {
     if (!UserName || !valuePassword) {
-      showWarn("Llene los campos para iniciar sesion");
+      toast.current.show(
+        showInfo(
+          "Oops, revise de nuevo",
+          "Llene los campos para iniciar sesion"
+        )
+      );
       return;
     }
 
-    fetch(`${UsuariosAPI}login`, {
-      method: "PUT",
+    const res = await fetch(UsuariosAPI + "/login", {
+      method: "POST",
       body: JSON.stringify({
         user: UserName,
         pwd: valuePassword,
       }),
       headers: { "Content-type": "application/json" },
-    })
-      .then((data) => data.json())
-      .then((data) => {
-        if (!data[0]) {
-          showError("Este usuario no existe");
-          return;
-        }
-        showSuccess("Inicion de Sesion correcto");
-        setAuth(data[0] != null);
-        setUser(
-          JSON.stringify({ NickName: data[0].NickName, Rol: data[0].Rol })
-        );
-      });
+    });
+    const data = await res.json();
+
+    if (data.Warn) {
+      toast.current.show(showWarn(data.Warn, data.Msg));
+      return;
+    }
+    toast.current.show(
+      showSuccess(data.Msg, "Bienvenid@, " + data.Usuario.Nombre)
+    );
+    localStorage.setItem("LC_api_Token", data.token);
+    Router.reload();
   };
 
   return (
@@ -75,7 +77,7 @@ export default function Home() {
               style={{ height: "50px" }}
             />
           </div>
-          <Button label="Ingresar" onClick={() => {}} />
+          <Button label="Ingresar" onClick={() => IniciarSesion()} />
         </div>
         {/* Informacion inferior */}
         <div className="grid grid-cols-3 gap-11">

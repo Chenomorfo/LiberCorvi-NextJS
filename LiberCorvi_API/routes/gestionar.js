@@ -7,28 +7,29 @@ import DB from "../db.js";
 //Completed and tested
 
 router.get("/estadisticas/servicios", async (req, res) => {
-  const { fecha, service, turno } = req.query;
+  const { fecha, list, turno } = req.query;
 
+  console.log(req.query);
   const Servicios = await DB.registroServicios
     .findAll({
-      attributes: [],
+      attributes: [
+        "Alumno.Especialidad",
+        [literal(`SUM(IF(Alumno.Sexo > 0,1,0))`), "Mujeres"],
+        [literal(`SUM(IF(Alumno.Sexo = 0,1,0))`), "Hombres"],
+      ],
       include: {
         model: DB.alumnos,
         as: "Alumno",
         required: true,
-        attributes: [
-          "Especialidad",
-          [literal(`SUM(IF(Sexo > 0,1,0))`), "Mujeres"],
-          [literal(`SUM(IF(Sexo = 0,1,0))`), "Hombres"],
-        ],
+        attributes: [],
       },
       where: {
         [Op.and]: [
-          Array.isArray(service) ? { Fecha: { [Op.between]: fecha } } : null,
-          service
-            ? Array.isArray(service)
-              ? { Servicio: { [Op.in]: service } }
-              : { Servicio: service }
+          fecha[1] != "null" ? { Fecha: { [Op.between]: fecha } } : null,
+          list
+            ? Array.isArray(list)
+              ? { Servicio: { [Op.in]: list } }
+              : { Servicio: list }
             : null,
           turno ? { Usuario_Registro: turno } : null,
         ],
@@ -46,15 +47,22 @@ router.get("/estadisticas/servicios", async (req, res) => {
 
 router.get("/estadisticas/visitas", async (req, res) => {
   const { fecha, turno } = req.query;
-
+  console.log(req.query);
   const Visita = await DB.registroVisitas
     .findAll({
+      attributes: [
+        [literal("YEAR(Fecha)"), "Year"],
+        [literal("MONTH(Fecha)"), "Month"],
+        [literal(`SUM(Cantidad_Mujeres)`), "Mujeres"],
+        [literal(`SUM(Cantidad_Hombres)`), "Hombres"],
+      ],
       where: {
         [Op.and]: [
           Array.isArray(fecha) ? { Fecha: { [Op.between]: fecha } } : null,
-          turno ? { Turno: turno } : null,
+          turno != "" ? { Turno: turno } : null,
         ],
       },
+      group: ["Year", "Month"],
     })
     .catch((e) => ({
       Error: "Error in Dates range",
@@ -71,27 +79,28 @@ router.get("/visitas", async (req, res) => {
 });
 
 router.get("/visitas/consultar", async (req, res) => {
-  const { year, month, day, turno } = req.query;
+  const { turno } = req.query;
 
-  const Visitas = await DB.registroVisitas.findAll({
+  const Visitas = await DB.registroVisitas.findOne({
     where: {
-      [Op.and]: [
-        { Fecha: new Date(year, month, day) },
-        turno ? { Turno: turno } : null,
-      ],
+      [Op.and]: [{ Fecha: new Date() }, turno ? { Turno: turno } : null],
     },
   });
 
-  res.send(Visitas);
+  if (Visitas) res.send(Visitas);
+  else
+    res.send({
+      Error: "Error in finding Date",
+      Msg: "The Date setted does not Exists",
+    });
 });
 
 router.post("/visitas/registrar", async (req, res) => {
-  const { Fecha, rol } = req.body;
+  const { turno } = req.body;
 
   const Visita = await DB.registroVisitas
     .create({
-      Fecha: new Date(Fecha),
-      Turno: rol ?? null,
+      Turno: turno ?? "",
     })
     .catch((e) => ({
       Error: "Error in Date register",
@@ -102,7 +111,7 @@ router.post("/visitas/registrar", async (req, res) => {
 });
 
 router.put("/visitas/actualizar", async (req, res) => {
-  const { year, month, day } = req.query;
+  const { fecha } = req.query;
   const { countM, countH, rol } = req.body;
 
   const Visita = await DB.registroVisitas.update(
@@ -112,7 +121,7 @@ router.put("/visitas/actualizar", async (req, res) => {
     },
     {
       where: {
-        [Op.and]: [{ Fecha: new Date(year, month, day) }, { Turno: rol ?? "" }],
+        [Op.and]: [{ Fecha: fecha }, { Turno: rol ?? "" }],
       },
     }
   );

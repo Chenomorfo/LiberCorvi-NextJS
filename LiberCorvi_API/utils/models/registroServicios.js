@@ -17,7 +17,7 @@ const Registro_Servicios = DB.define(
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
-    Usuario_Registro: DataTypes.CHAR(2),
+    Usuario_Registro: DataTypes.ENUM(["A", "M", "SM", "SV"]),
   },
   {
     timestamps: false,

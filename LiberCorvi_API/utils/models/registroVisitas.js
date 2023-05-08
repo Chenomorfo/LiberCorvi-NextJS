@@ -7,9 +7,10 @@ const Registro_Visitas = DB.define(
     Fecha: {
       type: DataTypes.DATEONLY,
       allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
-    Cantidad_Hombres: DataTypes.INTEGER,
-    Cantidad_Mujeres: DataTypes.INTEGER,
+    Cantidad_Hombres: { type: DataTypes.INTEGER, defaultValue: 0 },
+    Cantidad_Mujeres: { type: DataTypes.INTEGER, defaultValue: 0 },
     Turno: {
       type: DataTypes.ENUM(["A", "M", "SM", "SV"]),
       allowNull: false,

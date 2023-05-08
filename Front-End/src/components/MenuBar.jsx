@@ -1,8 +1,20 @@
+import { verifyUser } from "@/scripts/auths";
 import Image from "next/image";
 import Router from "next/router";
 import { Menubar } from "primereact/menubar";
+import { useEffect, useState } from "react";
 
 export default function MenuBar() {
+  const [routes, setRoutes] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      const Usuario = await verifyUser();
+
+      setRoutes(ItemList(Usuario?.Rol?.Code));
+    })();
+  }, []);
+
   const items = [
     {
       rol: ["A", "M", "SM", "SV", "Guest"],
@@ -106,16 +118,24 @@ export default function MenuBar() {
       ],
     },
     {
-      rol: ["A", "M", "SM", "SV"],
+      rol: ["A", "M", "SM", "SV", "Guest"],
       label: "Log Out",
       icon: "pi pi-fw pi-power-off",
       command: () => {
-        setAuth(false);
-        setUser(null);
-        Router.push("/");
+        localStorage.removeItem("LC_api_Token");
+        Router.reload();
       },
     },
   ];
+
+  const ItemList = (Code) => {
+    if (Code != null) {
+      console.log(Code);
+      return items.filter((item) => item.rol.find((rol) => rol == Code));
+    }
+
+    return items.filter((item) => item.rol.find((rol) => rol == "Guest"));
+  };
 
   const start = (
     <Image
@@ -140,7 +160,7 @@ export default function MenuBar() {
 
   return (
     <div className="h-1/6 p-10">
-      <Menubar model={items} start={start} end={null} />
+      <Menubar model={routes} start={start} end={null} />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Router from "next/router";
 //PrimeReact
 import { InputText } from "primereact/inputtext";
@@ -12,82 +12,116 @@ import { Password } from "primereact/password";
 import { Toast } from "primereact/toast";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { UsuariosAPI } from "@/scripts/apiConn";
+import { showError, showSuccess } from "@/scripts/alerts";
 
 export async function getServerSideProps() {
   const res = await fetch(UsuariosAPI + "/consultar");
-  const data = await res.json();
+  const users = await res.json();
 
-  return { props: { data } };
+  return { props: { users } };
 }
 
-function Usuarios({ data }) {
+function Usuarios({ users }) {
   const [visible, setVisible] = useState(false);
+  const [UserData, setUserData] = useState(users);
+  const toast = useRef(null);
 
   const RegistrarUsuario = async (nuevoUsuario) => {
-    if (
-      !nuevoUsuario.Pwd ||
-      !nuevoUsuario.User ||
-      !nuevoUsuario.Nick ||
-      !nuevoUsuario.Rol
-    ) {
-      showWarn("Asegurese de llenar todos los campos");
-      return;
-    }
-
-    await fetch(UsuariosAPI + "/registrar", {
+    const res = await fetch(UsuariosAPI + "/registrar", {
       method: "POST",
       body: JSON.stringify(nuevoUsuario),
       headers: { "Content-type": "application/json" },
     });
-    setVisible(false);
-    Router.push("/administracion/usuarios");
+    const data = await res.json();
+
+    if (data.Error) {
+      toast.current.show(showError(data.Error, data.Msg));
+    } else {
+      const res = await fetch(UsuariosAPI + "/consultar");
+      setUserData(await res.json());
+      setVisible(false);
+      toast.current.show(showSuccess(data.Success, data.Msg));
+    }
+  };
+
+  const EliminarUsuario = async (Id) => {
+    const res = await (
+      await fetch(UsuariosAPI + "/eliminar/" + Id, {
+        method: "DELETE",
+        headers: { "Content-type": "application/json" },
+      })
+    ).json();
+
+    toast.current.show(showSuccess(res.Success, res.Msg));
+    const data = await fetch(UsuariosAPI + "/consultar");
+    setUserData(await data.json());
   };
 
   return (
-    <section>
-      <Button
-        onClick={() => setVisible(true)}
-        style={{ marginBottom: "15px" }}
-        label="REGISTRAR USUARIO"
-      />
-      <Dialog
-        header="Registrar Usuario"
-        visible={visible}
-        style={{ width: "350px" }}
-        onHide={() => setVisible(false)}
-      >
-        <FormularioRegistro handleClick={RegistrarUsuario} />
-      </Dialog>
-      <div className="card">
-        <DataTable value={data} stripedRows tableStyle={{ minWidth: "50rem" }}>
-          <Column field="NickName" header="Nombre"></Column>
-          <Column field="UserName" header="Usuario"></Column>
-          <Column field="Password" header="Contraseña"></Column>
-          <Column field="Rol" header="Rol" />
-          <Column body={({ Id }) => <DialogoConfirmacion ID={Id} />} />
-        </DataTable>
-      </div>
-    </section>
+    <>
+      <Toast ref={toast} />
+      <section>
+        <Button
+          onClick={() => setVisible(true)}
+          style={{ marginBottom: "15px" }}
+          label="REGISTRAR USUARIO"
+        />
+        <Dialog
+          header="Registrar Usuario"
+          visible={visible}
+          style={{ width: "350px" }}
+          onHide={() => setVisible(false)}
+        >
+          <FormularioRegistro handleClick={RegistrarUsuario} />
+        </Dialog>
+        <div className="card">
+          <DataTable
+            value={UserData}
+            stripedRows
+            tableStyle={{ minWidth: "50rem" }}
+          >
+            <Column field="Nombre" header="Nombre"></Column>
+            <Column field="Usuario" header="Usuario"></Column>
+            <Column field="Password" header="Contraseña"></Column>
+            <Column field="Role.Nombre" header="Rol" />
+            <Column
+              body={({ Id }) => (
+                <DialogoConfirmacion handleClick={() => EliminarUsuario(Id)} />
+              )}
+            />
+          </DataTable>
+        </div>
+      </section>
+    </>
   );
 }
 
 const FormularioRegistro = ({ handleClick }) => {
-  const [selectedRol, setSelectedRol] = useState(null);
-  const roles = [
-    { name: "Administrador", code: "A" },
-    { name: "Moderador", code: "M" },
-    { name: "Servicio Matutino", code: "SM" },
-    { name: "Servicio Vespertino", code: "SV" },
-  ];
+  const [roles, setRoles] = useState([]);
+  const getRoles = async () => {
+    const res = await fetch(UsuariosAPI + "/consultar/roles");
+    const roles = await res.json();
 
-  const toast = useRef(null);
+    setRoles(
+      roles.map((item) => ({
+        name: item.Nombre,
+        code: item.Id,
+      }))
+    );
+  };
+
+  useEffect(() => {
+    getRoles();
+  }, []);
+
+  const [selectedRol, setSelectedRol] = useState(1);
+
   const [password, setPassword] = useState("");
   const [UserName, setUserName] = useState("");
   const [NickName, setNickName] = useState("");
 
   return (
     <>
-      <Toast ref={toast} />
       <div className="grid gap-4 h-80">
         <div className="card flex justify-content-center">
           <Dropdown
@@ -151,18 +185,9 @@ const FormularioRegistro = ({ handleClick }) => {
   );
 };
 
-const DialogoConfirmacion = ({ ID = null }) => {
+const DialogoConfirmacion = ({ handleClick = null }) => {
   const [visible, setVisible] = useState(false);
   const confirmButton = useRef(null);
-
-  const EliminarUsuario = async () => {
-    await fetch(UsuariosAPI + "/eliminar", {
-      method: "DELETE",
-      body: JSON.stringify({ id: ID }),
-      headers: { "Content-type": "application/json" },
-    });
-    Router.push("/administracion/usuarios");
-  };
 
   return (
     <>
@@ -172,7 +197,7 @@ const DialogoConfirmacion = ({ ID = null }) => {
         onHide={() => setVisible(false)}
         message="¿Esta seguro de eliminar a este Usuario?"
         icon="pi pi-exclamation-triangle"
-        accept={() => EliminarUsuario()}
+        accept={handleClick}
         reject={null}
       />
       <Button

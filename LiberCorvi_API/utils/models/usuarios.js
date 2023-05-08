@@ -12,17 +12,20 @@ const Usuario = DB.define(
     Usuario: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
+      validate: {
+        len: [4, 100],
+      },
     },
     Password: {
       type: DataTypes.STRING().BINARY,
       allowNull: false,
+      validate: {
+        len: [4, 100],
+      },
     },
     Nombre: {
       type: DataTypes.STRING,
-      allowNull: false,
-    },
-    Rol: {
-      type: DataTypes.ENUM(["A", "M", "SM", "SV"]),
       allowNull: false,
     },
   },
