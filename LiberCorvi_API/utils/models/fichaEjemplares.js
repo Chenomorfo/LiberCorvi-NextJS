@@ -6,7 +6,6 @@ const Ficha_Ejemplares = DB.define(
   {
     Numero_Ficha: {
       type: DataTypes.STRING(50),
-      allowNull: false,
     },
     Numero_Adquisicion: DataTypes.INTEGER,
 

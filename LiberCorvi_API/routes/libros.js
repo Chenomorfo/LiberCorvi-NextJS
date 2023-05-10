@@ -7,6 +7,30 @@ import DB from "../db.js";
 import { addDays } from "../utils/functions.js";
 
 //Not yer
+router.get("/buscar/ficha", async (req, res) => {
+  const { ficha } = req.query;
+  try {
+    const Lista = await DB.conn.query(
+      `
+      SELECT 	fl.Numero_Ficha,
+		          fl.Titulo,
+              fl.Autor,
+              fe.Numero_Adquisicion
+	    FROM ${DB.fichaLibros.tableName} fl JOIN ${DB.fichaEjemplares.tableName} fe ON fl.Numero_Ficha = fe.Numero_Ficha
+      WHERE fl.Numero_Ficha = :buscar_ficha;`,
+      {
+        type: QueryTypes.SELECT,
+        replacements: {
+          buscar_ficha: ficha,
+        },
+      }
+    );
+
+    res.send({ Success:"Libro valido",Msg: "Desplegando lista de libros", Lista });
+  } catch (error) {
+    res.send({ Msg: "Libro sin ejemplares", error });
+  }
+});
 
 //Can do better
 router.get("/consultar/ejemplar", async (req, res) => {

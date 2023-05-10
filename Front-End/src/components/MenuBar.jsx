@@ -7,11 +7,14 @@ import { useEffect, useState } from "react";
 export default function MenuBar() {
   const [routes, setRoutes] = useState([]);
 
+  const [usuario, setUsuario] = useState(null);
+
   useEffect(() => {
     (async () => {
       const Usuario = await verifyUser();
 
       setRoutes(ItemList(Usuario?.Rol?.Code));
+      setUsuario(Usuario?.User);
     })();
   }, []);
 
@@ -129,10 +132,8 @@ export default function MenuBar() {
   ];
 
   const ItemList = (Code) => {
-    if (Code != null) {
-      console.log(Code);
+    if (Code != null)
       return items.filter((item) => item.rol.find((rol) => rol == Code));
-    }
 
     return items.filter((item) => item.rol.find((rol) => rol == "Guest"));
   };
@@ -146,21 +147,21 @@ export default function MenuBar() {
     />
   );
 
-  /* const end = (
+  const end = (
     <div
       style={{ display: "flex", alignItems: "center", gap: "5px" }}
       className="p-inputgroup"
     >
-      {ShowUser() ? ShowUser().NickName : "Guest"}
+      {usuario ? usuario.Nombre : "Guest"}
       <span className="p-inputgroup-addon">
         <i className="pi pi-id-card"></i>
       </span>
     </div>
-  ); */
+  );
 
   return (
     <div className="h-1/6 p-10">
-      <Menubar model={routes} start={start} end={null} />
+      <Menubar model={routes} start={start} end={end} />
     </div>
   );
 }

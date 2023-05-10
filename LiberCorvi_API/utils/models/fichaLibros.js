@@ -6,7 +6,7 @@ const Ficha_Libros = DB.define(
   {
     Numero_Ficha: {
       type: DataTypes.STRING(50),
-      allowNull: false,
+      primaryKey: true,
     },
     Fecha_Registro: DataTypes.DATE,
 

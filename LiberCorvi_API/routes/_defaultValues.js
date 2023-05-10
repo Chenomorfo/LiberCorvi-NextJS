@@ -92,7 +92,7 @@ router.get("/alumnos", async (req, res) => {
   res.send({ msg: "Alumnos ingresados" });
 });
 router.get("/fichaLibros", async (req, res) => {
-  await DB.fichaLibros.destroy({ truncate: true });
+  //await DB.fichaLibros.destroy({ truncate: true });
   const divider = Math.ceil(FichaLibros.length / 15);
 
   for (let i = 0; i < divider; i++) {
@@ -105,14 +105,20 @@ router.get("/fichaLibros", async (req, res) => {
 
 router.get("/fichaEjemplares", async (req, res) => {
   //await DB.fichaEjemplares.destroy({ truncate: true });
-  const divider = Math.ceil(FichaEjemplares.length / 10);
+  const divider = Math.ceil(FichaEjemplares.length / 20);
 
-  for (let i = 0; i < 10; i++) {
-    if (i == divider - 1) await DB.fichaEjemplares.bulkCreate(FichaEjemplares);
-    else await DB.fichaEjemplares.bulkCreate(FichaEjemplares.splice(-divider));
+  try {
+    for (let i = 0; i < 20; i++) {
+      if (i == divider - 1)
+        await DB.fichaEjemplares.bulkCreate(FichaEjemplares);
+      else
+        await DB.fichaEjemplares.bulkCreate(FichaEjemplares.splice(-divider));
+    }
+
+    res.send({ msg: "Carga Finalizada" });
+  } catch (error) {
+    res.send({ msg: "Error al cargar", error });
   }
-
-  res.send({ msg: "Carga Finalizada" });
 });
 
 export default router;

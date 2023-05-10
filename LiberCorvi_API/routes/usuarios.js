@@ -93,15 +93,13 @@ router.post("/auth", verifyToken, async (req, res) => {
     where: { Id: req.User.Rol },
   });
 
-  console.log(Rol.dataValues);
-
   if (!Rol)
     return res.send({
       Error: "Missing Rol",
       Msg: "El usuario no cuenta con un rol",
     });
 
-  res.send({ Rol: Rol.dataValues });
+  res.send({ User: req.User, Rol: Rol.dataValues });
 });
 
 export default router;
