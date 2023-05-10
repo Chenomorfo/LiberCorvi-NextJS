@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Counter from "@/components/Contador";
 import { GestionarAPI } from "@/scripts/apiConn";
 import { verifyUser } from "@/scripts/auths";
+import { headers } from "next/dist/client/components/headers";
 
 function Visitas() {
 
@@ -14,17 +15,16 @@ function Visitas() {
     const visitas = await res.json();
 
     if (visitas.Error) {
-
       const res = await fetch(GestionarAPI + "/visitas/registrar", {
         method: "POST",
-        body: JSON.stringify({
-          turno: Usuario?.Rol?.Code
-        })
+        body: JSON.stringify({ turno: Usuario?.Rol?.Code }),
+        headers: { "Content-Type": "application/json" }
       });
       const visitas = await res.json();
 
       setVisitasData(visitas);
     } else setVisitasData(visitas);
+
   }
 
   const actualizarVisitas = async (hombres, mujeres) => {

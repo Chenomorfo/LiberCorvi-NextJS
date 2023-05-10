@@ -99,10 +99,9 @@ router.post("/visitas/registrar", async (req, res) => {
   const { turno } = req.body;
 
   try {
-
     const Visita = await DB.registroVisitas
       .create({
-        Turno: turno ?? "",
+        Turno: turno,
       })
 
     res.send(Visita);
