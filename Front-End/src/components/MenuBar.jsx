@@ -121,8 +121,8 @@ export default function MenuBar() {
       ],
     },
     {
-      rol: ["A", "M", "SM", "SV", "Guest"],
-      label: "Log Out",
+      rol: ["A", "M", "SM", "SV"],
+      label: "Cerrar Sesion",
       icon: "pi pi-fw pi-power-off",
       command: () => {
         localStorage.removeItem("LC_api_Token");

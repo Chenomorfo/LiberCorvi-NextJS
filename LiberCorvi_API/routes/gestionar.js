@@ -98,16 +98,17 @@ router.get("/visitas/consultar", async (req, res) => {
 router.post("/visitas/registrar", async (req, res) => {
   const { turno } = req.body;
 
-  const Visita = await DB.registroVisitas
-    .create({
-      Turno: turno ?? "",
-    })
-    .catch((e) => ({
-      Error: "Error in Date register",
-      Msg: "The Date setted is Invalid or the Rol is not exists",
-    }));
+  try {
 
-  res.send(Visita);
+    const Visita = await DB.registroVisitas
+      .create({
+        Turno: turno ?? "",
+      })
+
+    res.send(Visita);
+  } catch (error) {
+    res.send({ error })
+  }
 });
 
 router.put("/visitas/actualizar", async (req, res) => {

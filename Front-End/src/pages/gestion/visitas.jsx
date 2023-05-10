@@ -1,34 +1,46 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Counter from "@/components/Contador";
 import { GestionarAPI } from "@/scripts/apiConn";
+import { verifyUser } from "@/scripts/auths";
 
-export async function getStaticProps() {
-  const res = await fetch(GestionarAPI + "/visitas/consultar");
-  const visitas = await res.json();
+function Visitas() {
 
-  if (visitas.Error) {
-    const res = await fetch(GestionarAPI + "/visitas/registrar", {
-      method: "POST",
-    });
+  const [visitasData, setVisitasData] = useState({});
+
+  const cargarDatos = async () => {
+    const Usuario = await verifyUser();
+
+    const res = await fetch(GestionarAPI + "/visitas/consultar?turno=" + Usuario?.Rol?.Code);
     const visitas = await res.json();
 
-    return { props: { visitas } };
-  } else return { props: { visitas } };
-}
+    if (visitas.Error) {
 
-function Visitas({ visitas }) {
-  const [visitasData, setVisitasData] = useState(visitas);
+      const res = await fetch(GestionarAPI + "/visitas/registrar", {
+        method: "POST",
+        body: JSON.stringify({
+          turno: Usuario?.Rol?.Code
+        })
+      });
+      const visitas = await res.json();
+
+      setVisitasData(visitas);
+    } else setVisitasData(visitas);
+  }
 
   const actualizarVisitas = async (hombres, mujeres) => {
+
+    const Usuario = await verifyUser();
+
     const res = await fetch(
       GestionarAPI +
-        "/visitas/actualizar?fecha=" +
-        new Date().toISOString().split("T")[0],
+      "/visitas/actualizar?fecha=" +
+      new Date().toISOString().split("T")[0],
       {
         method: "PUT",
         body: JSON.stringify({
           countM: mujeres,
           countH: hombres,
+          rol: Usuario?.Rol?.Code
         }),
         headers: { "Content-type": "application/json" },
       }
@@ -39,6 +51,10 @@ function Visitas({ visitas }) {
       setVisitasData(await res.json());
     }
   };
+
+  useEffect(() => {
+    cargarDatos();
+  }, []);
 
   return (
     <section className="w-1/2 mx-auto">
@@ -64,9 +80,9 @@ function Visitas({ visitas }) {
           downClick={() =>
             visitasData.Cantidad_Hombres > 0
               ? actualizarVisitas(
-                  visitasData.Cantidad_Hombres - 1,
-                  visitasData.Cantidad_Mujeres
-                )
+                visitasData.Cantidad_Hombres - 1,
+                visitasData.Cantidad_Mujeres
+              )
               : null
           }
         />
@@ -82,9 +98,9 @@ function Visitas({ visitas }) {
           downClick={() =>
             visitasData.Cantidad_Mujeres > 0
               ? actualizarVisitas(
-                  visitasData.Cantidad_Hombres,
-                  visitasData.Cantidad_Mujeres - 1
-                )
+                visitasData.Cantidad_Hombres,
+                visitasData.Cantidad_Mujeres - 1
+              )
               : null
           }
         />

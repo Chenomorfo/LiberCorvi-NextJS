@@ -60,6 +60,19 @@ router.get("/agrupar", async (req, res) => {
   const { nc } = req.query;
 
   const Lista = await DB.alumnos.findAll({
+    attributes: [
+      [
+        DB.conn.fn(
+          "concat",
+          DB.conn.col("Nombre"),
+          " ",
+          DB.conn.col("Apellido_Paterno"),
+          " ",
+          DB.conn.col("Apellido_Materno")
+        ),
+        "Nombre",
+      ],
+    ],
     where: {
       Numero_Control: {
         [Op.in]: [nc],
