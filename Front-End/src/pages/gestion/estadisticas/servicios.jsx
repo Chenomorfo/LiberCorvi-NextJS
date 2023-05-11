@@ -23,8 +23,11 @@ export default function GraficosServicios() {
   const [ListaHorarios, setListaHorarios] = useState([]);
 
   const getServiceStats = async (dates = [], list, turno) => {
-    const servicios = list ? list.map(({ Servicio }) => `list=${Servicio}`) : [];
-    const fechas = dates ? dates.map((d) => `fecha=${d}`) : null;
+    if(!dates) return
+    const servicios = list
+      ? list.map(({ Servicio }) => `list=${Servicio}`)
+      : [];
+    const fechas = dates ? dates.map((d) => `fecha=${d}`) : [];
 
     const res = await fetch(
       `${GestionarAPI}/estadisticas/servicios?${
@@ -39,7 +42,7 @@ export default function GraficosServicios() {
 
     data.forEach((d) => {
       Especialidad.push(d.Especialidad);
-      Total.push(d.Hombres + d.Mujeres);
+      Total.push(parseInt(d.Hombres) + parseInt(d.Mujeres));
     });
     CreatePieGraph(Especialidad, Total);
     setTableData(data);

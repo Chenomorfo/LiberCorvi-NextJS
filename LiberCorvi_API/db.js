@@ -34,6 +34,10 @@ registroServicios.belongsTo(Alumnos, {
   as: "Alumno",
 });
 
+registroPrestamos.belongsTo(Alumnos, {
+  foreignKey: "Estudiante_Numero_Control",
+});
+
 usuarios.belongsTo(Roles, { foreignKey: "Rol" });
 /* usuarios.hasOne(Roles, {
   foreignKey: "Rol",

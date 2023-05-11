@@ -1,7 +1,7 @@
 import { Router } from "express";
 const router = Router();
 
-import { DataTypes, Op, QueryTypes, Sequelize } from "sequelize";
+import { DataTypes, Op, QueryTypes, Sequelize, literal } from "sequelize";
 import DB from "../db.js";
 
 import { addDays } from "../utils/functions.js";
@@ -26,7 +26,11 @@ router.get("/buscar/ficha", async (req, res) => {
       }
     );
 
-    res.send({ Success:"Libro valido",Msg: "Desplegando lista de libros", Lista });
+    res.send({
+      Success: "Libro valido",
+      Msg: "Desplegando lista de libros",
+      Lista,
+    });
   } catch (error) {
     res.send({ Msg: "Libro sin ejemplares", error });
   }
@@ -85,9 +89,56 @@ router.get("/consultar/libro", async (req, res) => {
 
 router.get("/consultar/prestamo", async (req, res) => {
   const Prestamos = await DB.registroPrestamos.findAll({
+    include: {
+      model: DB.alumnos,
+      required: true,
+      attributes: [
+        [
+          DB.conn.fn(
+            "concat",
+            DB.conn.col("Nombre"),
+            " ",
+            DB.conn.col("Apellido_Paterno"),
+            " ",
+            DB.conn.col("Apellido_Materno")
+          ),
+          "Nombre",
+        ],
+      ],
+    },
     where: {
       Devolucion: 1,
     },
+    raw: true,
+  });
+
+  res.send(Prestamos);
+});
+
+router.get("/consultar/prestamo/:nc", async (req, res) => {
+  const { nc } = req.params;
+  const Prestamos = await DB.registroPrestamos.findAll({
+    include: {
+      model: DB.alumnos,
+      required: true,
+      attributes: [
+        [
+          DB.conn.fn(
+            "concat",
+            DB.conn.col("Nombre"),
+            " ",
+            DB.conn.col("Apellido_Paterno"),
+            " ",
+            DB.conn.col("Apellido_Materno")
+          ),
+          "Nombre",
+        ],
+      ],
+    },
+    where: {
+      [Op.and]: [{ Devolucion: 1 }, { Estudiante_Numero_Control: nc }],
+    },
+    raw: true,
   });
 
   res.send(Prestamos);

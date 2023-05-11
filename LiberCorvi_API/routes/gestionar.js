@@ -99,19 +99,17 @@ router.post("/visitas/registrar", async (req, res) => {
   const { turno } = req.body;
 
   try {
-    const Visita = await DB.registroVisitas
-      .create({
-        Turno: turno,
-      })
+    const Visita = await DB.registroVisitas.create({
+      Turno: turno,
+    });
 
     res.send(Visita);
   } catch (error) {
-    res.send({ error })
+    res.send({ error });
   }
 });
 
 router.put("/visitas/actualizar", async (req, res) => {
-  const { fecha } = req.query;
   const { countM, countH, rol } = req.body;
 
   const Visita = await DB.registroVisitas.update(
@@ -121,11 +119,10 @@ router.put("/visitas/actualizar", async (req, res) => {
     },
     {
       where: {
-        [Op.and]: [{ Fecha: fecha }, { Turno: rol ?? "" }],
+        [Op.and]: [{ Fecha: new Date() }, rol ? { Turno: rol } : null],
       },
     }
   );
-
   res.send(Visita);
 });
 

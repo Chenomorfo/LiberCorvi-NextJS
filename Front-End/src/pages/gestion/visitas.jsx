@@ -5,51 +5,46 @@ import { verifyUser } from "@/scripts/auths";
 import { headers } from "next/dist/client/components/headers";
 
 function Visitas() {
-
   const [visitasData, setVisitasData] = useState({});
 
   const cargarDatos = async () => {
     const Usuario = await verifyUser();
 
-    const res = await fetch(GestionarAPI + "/visitas/consultar?turno=" + Usuario?.Rol?.Code);
+    const res = await fetch(
+      GestionarAPI + "/visitas/consultar?turno=" + Usuario?.Rol?.Code
+    );
     const visitas = await res.json();
 
     if (visitas.Error) {
       const res = await fetch(GestionarAPI + "/visitas/registrar", {
         method: "POST",
         body: JSON.stringify({ turno: Usuario?.Rol?.Code }),
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       });
-      const visitas = await res.json();
+      const { Cantidad_Hombres, Cantidad_Mujeres } = await res.json();
 
-      setVisitasData(visitas);
-    } else setVisitasData(visitas);
-
-  }
+      setVisitasData({ Cantidad_Hombres, Cantidad_Mujeres });
+    } else
+      setVisitasData({
+        Cantidad_Hombres: visitas.Cantidad_Hombres,
+        Cantidad_Mujeres: visitas.Cantidad_Mujeres,
+      });
+  };
 
   const actualizarVisitas = async (hombres, mujeres) => {
-
     const Usuario = await verifyUser();
 
-    const res = await fetch(
-      GestionarAPI +
-      "/visitas/actualizar?fecha=" +
-      new Date().toISOString().split("T")[0],
-      {
-        method: "PUT",
-        body: JSON.stringify({
-          countM: mujeres,
-          countH: hombres,
-          rol: Usuario?.Rol?.Code
-        }),
-        headers: { "Content-type": "application/json" },
-      }
-    );
+    const res = await fetch(GestionarAPI + "/visitas/actualizar", {
+      method: "PUT",
+      body: JSON.stringify({
+        countM: mujeres,
+        countH: hombres,
+        rol: Usuario?.Rol?.Code,
+      }),
+      headers: { "Content-type": "application/json" },
+    });
 
-    if (res.status < 300) {
-      const res = await fetch(GestionarAPI + "/visitas/consultar");
-      setVisitasData(await res.json());
-    }
+    setVisitasData({ Cantidad_Hombres: hombres, Cantidad_Mujeres: mujeres });
   };
 
   useEffect(() => {
@@ -80,9 +75,9 @@ function Visitas() {
           downClick={() =>
             visitasData.Cantidad_Hombres > 0
               ? actualizarVisitas(
-                visitasData.Cantidad_Hombres - 1,
-                visitasData.Cantidad_Mujeres
-              )
+                  visitasData.Cantidad_Hombres - 1,
+                  visitasData.Cantidad_Mujeres
+                )
               : null
           }
         />
@@ -98,9 +93,9 @@ function Visitas() {
           downClick={() =>
             visitasData.Cantidad_Mujeres > 0
               ? actualizarVisitas(
-                visitasData.Cantidad_Hombres,
-                visitasData.Cantidad_Mujeres - 1
-              )
+                  visitasData.Cantidad_Hombres,
+                  visitasData.Cantidad_Mujeres - 1
+                )
               : null
           }
         />

@@ -7,7 +7,6 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { AlumnosAPI, LibrosAPI } from "@/scripts/apiConn";
-import { addDays } from "@/scripts/dates";
 
 export async function getServerSideProps(context) {
   const res = await fetch(LibrosAPI + "/consultar/prestamo");
@@ -22,6 +21,8 @@ function Devoluciones({ data }) {
   const [ListaAlumnos, setListaAlumnos] = useState([]);
 
   const [Prestamos, setPrestamos] = useState(data);
+
+  const [filtro, setFiltro] = useState(null);
 
   const RenovarLibro = async (Id) => {
     await fetch(LibrosAPI + `/renovar/prestamo/${Id}`, {
@@ -45,9 +46,14 @@ function Devoluciones({ data }) {
     const res = await fetch(AlumnosAPI + `/buscar?nc=${nc}`);
     const data = await res.json();
 
-    console.log(data);
-    if (!data.Error) setDataAlumno(data);
-    else setDataAlumno({});
+    if (data.Error) {
+      setFiltro(null);
+      setDataAlumno({ data });
+      return;
+    }
+    const filtro = await fetch(LibrosAPI + "/consultar/prestamo/" + nc);
+    const dataFiltro = await filtro.json();
+    setFiltro(dataFiltro);
   };
 
   const Search = (event) => {
@@ -90,9 +96,9 @@ function Devoluciones({ data }) {
         </div>
       </section>
 
-      <DataTable value={Prestamos} className="col-span-3">
+      <DataTable value={filtro ?? Prestamos} className="col-span-3">
         <Column field="Estudiante_Numero_Control" header="# Control" />
-        <Column field="Estudiante_Numero_Control" header="Nombre" />
+        <Column field="Alumno.Nombre" header="Nombre" />
         <Column field="Libro_Numero_Ficha" header="# Ficha" />
         <Column
           field="Fecha_Adquisicion"
