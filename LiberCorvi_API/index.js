@@ -8,6 +8,7 @@ import GestionesRouteController from "./routes/gestionar.js";
 import LibrosRouteController from "./routes/libros.js";
 import UsuariosRouteController from "./routes/usuarios.js";
 import ServiciosRouteController from "./routes/servicios.js";
+import TestRouteController from "./routes/test.js";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use("/gestionar", GestionesRouteController);
 app.use("/libros", LibrosRouteController);
 app.use("/usuarios", UsuariosRouteController);
 app.use("/servicios", ServiciosRouteController);
+app.use("/test", TestRouteController);
 
 //Network
 import { networkInterfaces } from "os";
