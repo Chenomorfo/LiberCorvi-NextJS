@@ -4,6 +4,7 @@ const DB_CONN = (dbName = "") => {
   return new Sequelize(dbName, "root", "", {
     host: "localhost",
     dialect: "mysql",
+    logging: false,
   });
 };
 
@@ -15,7 +16,7 @@ try {
 } catch (error) {
   if (error.name === "SequelizeConnectionRefusedError") {
     console.log("Please, connect XAMPP");
-    throw Error("XAMPP IS NOT ENABLED")
+    throw Error("XAMPP IS NOT ENABLED");
   }
   if (error.name === "SequelizeConnectionError") {
     sequelize = DB_CONN();

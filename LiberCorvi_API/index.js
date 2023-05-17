@@ -1,5 +1,8 @@
 import express from "express";
 import cors from "cors";
+import { Server as SocketServer } from "socket.io";
+import http from "http";
+import sockets from "./utils/sockets.js";
 
 //RoutesController
 import DefaultRouteController from "./routes/_defaultValues.js";
@@ -11,6 +14,12 @@ import ServiciosRouteController from "./routes/servicios.js";
 import TestRouteController from "./routes/test.js";
 
 const app = express();
+const server = http.createServer(app);
+const io = new SocketServer(server, {
+  cors: {
+    origin: "http://localhost:3000",
+  },
+});
 
 //configs
 app.use(cors());
@@ -19,17 +28,22 @@ app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-//routes
-app.use("/default", DefaultRouteController);
-app.use("/alumnos", AlumnosRouteController);
-app.use("/gestionar", GestionesRouteController);
-app.use("/libros", LibrosRouteController);
-app.use("/usuarios", UsuariosRouteController);
-app.use("/servicios", ServiciosRouteController);
-app.use("/test", TestRouteController);
+(() => {
+  //routes
+  app.use("/default", DefaultRouteController);
+  app.use("/alumnos", AlumnosRouteController);
+  app.use("/gestionar", GestionesRouteController);
+  app.use("/libros", LibrosRouteController);
+  app.use("/usuarios", UsuariosRouteController);
+  app.use("/servicios", ServiciosRouteController);
+  app.use("/test", TestRouteController);
+})();
+//Socket.io
+sockets(io);
 
 //Network
 import { networkInterfaces } from "os";
+
 const nets = networkInterfaces();
 const results = Object.create(null); // Or just '{}', an empty object
 
@@ -44,7 +58,7 @@ for (const name of Object.keys(nets)) {
   }
 }
 //init server
-app.listen(4200, () => {
+server.listen(4200, () => {
   console.log("server on http://localhost:" + 4200);
 
   console.log(

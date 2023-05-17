@@ -2,9 +2,10 @@ import { useState, useEffect, useContext, useRef } from "react";
 
 import { Toast } from "primereact/toast";
 import { ServiciosContext } from "@/context/ServiciosContext";
-import { ServiciosAPI } from "@/scripts/apiConn";
+import { API, AlumnosAPI, ServiciosAPI } from "@/scripts/apiConn";
 import { showWarn, showSuccess, showInfo } from "@/scripts/alerts";
 import { verifyUser } from "@/scripts/auths";
+import { Busy_Laptop, Free_Laptop } from "./SVGIcons";
 
 async function fetchServicio(servicio, numero) {
   const res = await fetch(
@@ -14,10 +15,15 @@ async function fetchServicio(servicio, numero) {
   return data;
 }
 
+import IO from "socket.io-client";
+
+const socket = IO(API);
+
 function CartaServicioIndividual({ servicio = "Laptop", numero = 0 }) {
   const [Datos, setDatos] = useState({});
 
   const { AsignarServicio } = useContext(ServiciosContext);
+
   const toast = useRef(null);
 
   const AsignarArea = async () => {
@@ -33,7 +39,11 @@ function CartaServicioIndividual({ servicio = "Laptop", numero = 0 }) {
         body: JSON.stringify({ lista: null }),
         headers: { "Content-type": "application/json" },
       });
-      setDatos(await fetchServicio(servicio, numero));
+
+      const newDatos = Datos;
+      newDatos.Lista = null;
+      socket.emit("client:update service", newDatos);
+
       return;
     }
 
@@ -54,13 +64,13 @@ function CartaServicioIndividual({ servicio = "Laptop", numero = 0 }) {
       );
       return;
     }
-
     toast.current.show(
       showSuccess(
         "Exito al Ingresar",
         `Se registro un alumno en ${servicio} ${numero}`
       )
     );
+
     const user = await verifyUser();
 
     await fetch(ServiciosAPI + "/registrar?area=" + servicio, {
@@ -74,14 +84,25 @@ function CartaServicioIndividual({ servicio = "Laptop", numero = 0 }) {
       headers: { "Content-type": "application/json" },
     });
 
-    setDatos(await fetchServicio(servicio, numero));
+    const newDatos = Datos;
+    newDatos.Lista = alumno;
+    socket.emit("client:update service", newDatos);
   };
 
   useEffect(() => {
-    (async () => {
-      setDatos(await fetchServicio(servicio, numero));
-    })();
-  }, []);
+    (async () => setDatos(await fetchServicio(servicio, numero)))();
+
+    socket.connect();
+    async function getDatos(data) {
+      setDatos(data);
+    }
+    //socket on
+    socket.on("server:update servicio", getDatos);
+    return () => {
+      socket.off("server:update servicio", getDatos);
+      socket.disconnect();
+    };
+  }, [Datos]);
 
   return (
     <>
@@ -91,7 +112,7 @@ function CartaServicioIndividual({ servicio = "Laptop", numero = 0 }) {
           {servicio} N° {numero}
         </h3>
 
-        <img src="/imgs/laptop-solid.svg" alt="Laptop icon" />
+        {Datos.Lista ? <Busy_Laptop /> : <Free_Laptop />}
 
         <button
           style={{
@@ -102,7 +123,14 @@ function CartaServicioIndividual({ servicio = "Laptop", numero = 0 }) {
           } opacity-0 hover:opacity-100`}
           onClick={() => AsignarArea()}
         >
-          {Datos.Lista ? "EN USO" : "Disponible"}
+          {Datos.Lista ? (
+            <>
+              <h3 className="text-2xl">En uso por:</h3>{" "}
+              <p className="text-lg">{Datos.Lista}</p>
+            </>
+          ) : (
+            "Disponible"
+          )}
         </button>
       </section>
     </>

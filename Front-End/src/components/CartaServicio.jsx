@@ -7,10 +7,14 @@ import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toast } from "primereact/toast";
-import { AlumnosAPI, ServiciosAPI } from "@/scripts/apiConn";
+import { API, AlumnosAPI, ServiciosAPI } from "@/scripts/apiConn";
 import { ServiciosContext } from "@/context/ServiciosContext";
 import { showWarn } from "@/scripts/alerts";
 import { verifyUser } from "@/scripts/auths";
+
+import IO from "socket.io-client";
+
+const socket = IO(API);
 
 async function fetchServicio(servicio, numero) {
   const res = await fetch(
@@ -21,8 +25,6 @@ async function fetchServicio(servicio, numero) {
 }
 
 function CartaServicio({ servicio = "Cubiculo", numero = 0 }) {
-  //const datos = fetchServicio(servicio, numero);
-
   const { AsignarServicio } = useContext(ServiciosContext);
 
   const [Datos, setDatos] = useState({});
@@ -54,7 +56,12 @@ function CartaServicio({ servicio = "Cubiculo", numero = 0 }) {
       headers: { "Content-type": "application/json" },
     });
     setLista(null);
-    setDatos(await fetchServicio(servicio, numero));
+
+    //Aqui ta lo mamalon
+    //const newDatos = await fetchServicio(servicio, numero);
+    const newDatos = Datos;
+    newDatos.Lista = null;
+    socket.emit("client:update service", newDatos);
   };
 
   const AsignarArea = async () => {
@@ -95,14 +102,28 @@ function CartaServicio({ servicio = "Cubiculo", numero = 0 }) {
       body: JSON.stringify({ lista: Lista }),
       headers: { "Content-type": "application/json" },
     });
-    setDatos(await fetchServicio(servicio, numero));
+    const newDatos = Datos;
+    newDatos.Lista = Lista;
+    socket.emit("client:update service", newDatos);
   };
 
   useEffect(() => {
-    (async () => {
-      setDatos(await fetchServicio(servicio, numero));
-    })();
-  }, []);
+    (async () => setDatos(await fetchServicio(servicio, numero)))();
+
+    socket.connect();
+    async function getDatos(data) {
+      setDatos(data);
+    }
+
+    //socket on
+    socket.on("server:update servicio", getDatos);
+    return () => {
+      //socket off
+      socket.off("server:update servicio", getDatos);
+
+      socket.disconnect();
+    };
+  }, [Datos]);
 
   return (
     <>
