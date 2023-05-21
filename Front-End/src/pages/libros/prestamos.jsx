@@ -122,6 +122,7 @@ function Prestamos() {
           </div>
           <div className="grid grid-flow-col gap-2 h-19">
             <Button
+            className="bg-green-400 border-green-400"
               label="Prestamo Interno"
               onClick={() => RegistrarPrestamo(true)}
             />
