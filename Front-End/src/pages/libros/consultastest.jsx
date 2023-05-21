@@ -6,26 +6,17 @@ import { Column } from "primereact/column";
 import { AutoComplete } from "primereact/autocomplete";
 import { LibrosAPI } from "@/scripts/apiConn";
 import { Dialog } from "primereact/dialog";
+import { ListBox } from "primereact/listbox";
 
-export default function Consultas() {
-  function fetchConsultas(libro = "", autor = "", contenido = "") {
-    fetch(
-      LibrosAPI +
-        "/consultar/libro?libro=" +
-        libro +
-        "&autor=" +
-        autor +
-        "&contenido=" +
-        contenido
-    )
+function Consultas() {
+  function fetchConsultas(filtro = "") {
+    fetch(LibrosAPI + "/consultar/libro?filter=" + filtro)
       .then((data) => data.json())
       .then((data) => setLibros(data));
   }
 
   const [Libros, setLibros] = useState([]);
-  const [filtroAutor, setFiltroAutor] = useState("");
-  const [filtroTitulo, setFiltroTitulo] = useState("");
-  const [filtroContenido, setFiltroContenido] = useState("");
+  const [Search, setSearch] = useState("");
 
   const [visible, setVisible] = useState(false);
   const [consulta, setConsulta] = useState({});
@@ -94,35 +85,15 @@ export default function Consultas() {
         </section>
       </Dialog>
       <section className=" overflow-hidden grid gap-4">
-        <div className="flex gap-2">
-          <AutoComplete
-            placeholder="Buscar Titulo"
-            style={{ height: "50px" }}
-            value={filtroTitulo}
-            onChange={(e) => {
-              setFiltroTitulo(e.value);
-              fetchConsultas(e.value, filtroAutor, filtroContenido);
-            }}
-          />
-          <AutoComplete
-            placeholder="Buscar Autor"
-            style={{ height: "50px" }}
-            value={filtroAutor}
-            onChange={(e) => {
-              setFiltroAutor(e.value);
-              fetchConsultas(filtroTitulo, e.value, filtroContenido);
-            }}
-          />
-          <AutoComplete
-            placeholder="Buscar Contenido"
-            style={{ height: "50px" }}
-            value={filtroContenido}
-            onChange={(e) => {
-              setFiltroContenido(e.value);
-              fetchConsultas(filtroTitulo, filtroAutor, e.value);
-            }}
-          />
-        </div>
+        <AutoComplete
+          placeholder="Buscar Coincidencias"
+          style={{ height: "50px" }}
+          value={Search}
+          onChange={(e) => {
+            setSearch(e.value);
+            fetchConsultas(e.value);
+          }}
+        />
 
         <DataTable
           value={Libros}
@@ -145,3 +116,5 @@ export default function Consultas() {
     </>
   );
 }
+
+export default Consultas;

@@ -53,15 +53,19 @@ function Prestamos() {
         showInfo("¿Necesitas un Tip?", "Necesita tener un alumno y un libro")
       );
     } else {
-      await fetch(LibrosAPI + "/registrar/prestamo", {
+      const reqPrestamo = await fetch(LibrosAPI + "/registrar/prestamo", {
         method: "POST",
         body: JSON.stringify({
           ficha: Libro.Numero_Ficha,
           ejemplar: Libro.Numero_Adquisicion,
           nc: Datos.Numero_Control,
+          Tipo: esInterno,
         }),
         headers: { "Content-type": "application/json" },
       });
+
+      const dataPrestamo = await reqPrestamo.json();
+      console.log(dataPrestamo);
 
       const servicio = esInterno ? "Prestamo_Interno" : "Prestamo_Externo";
 
@@ -72,6 +76,7 @@ function Prestamos() {
         body: JSON.stringify({
           lista: [Datos.Numero_Control],
           usuario: user.Rol.Code,
+          Prestamo: dataPrestamo.Id,
         }),
         headers: { "Content-type": "application/json" },
       });

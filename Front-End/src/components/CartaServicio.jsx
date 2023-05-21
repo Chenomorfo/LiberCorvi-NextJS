@@ -110,7 +110,7 @@ function CartaServicio({ servicio = "Cubiculo", numero = 0 }) {
   useEffect(() => {
     (async () => setDatos(await fetchServicio(servicio, numero)))();
 
-    socket.connect();
+    //socket.connect();
     async function getDatos(data) {
       setDatos(data);
     }
@@ -121,7 +121,7 @@ function CartaServicio({ servicio = "Cubiculo", numero = 0 }) {
       //socket off
       socket.off("server:update servicio", getDatos);
 
-      socket.disconnect();
+      //socket.disconnect();
     };
   }, [Datos]);
 

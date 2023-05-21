@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import { Password } from "primereact/password";
 import { InputText } from "primereact/inputtext";
@@ -7,12 +7,21 @@ import { Toast } from "primereact/toast";
 import { showError, showInfo, showSuccess, showWarn } from "@/scripts/alerts";
 import { UsuariosAPI } from "@/scripts/apiConn";
 import Router from "next/router";
+import { verifyUser } from "@/scripts/auths";
 
 export default function Home() {
   const [valuePassword, setValuePassword] = useState("");
   const [UserName, setUserName] = useState("");
 
   const toast = useRef(null);
+
+  useEffect(() => {
+    (async () => {
+      const user = await verifyUser();
+
+      if (user) Router.replace("/administracion/rfid");
+    })();
+  }, []);
 
   const IniciarSesion = async () => {
     if (!UserName || !valuePassword) {

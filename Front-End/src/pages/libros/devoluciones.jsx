@@ -96,10 +96,10 @@ function Devoluciones({ data }) {
         </div>
       </section>
 
-      <DataTable value={filtro ?? Prestamos} className="col-span-3">
+      <DataTable scrollHeight="80vh" value={filtro ?? Prestamos} className="col-span-3">
         <Column field="Estudiante_Numero_Control" header="# Control" />
         <Column field="Alumno.Nombre" header="Nombre" />
-        <Column field="Libro_Numero_Ficha" header="# Ficha" />
+        <Column field="Libro_Numero_Ejemplar" header="# Ficha" />
         <Column
           field="Fecha_Adquisicion"
           header="Fecha Adquisicion"
@@ -112,10 +112,11 @@ function Devoluciones({ data }) {
           }
         />
         <Column
-          field="Fecha_Devolucion"
           header="Fecha Devolucion"
-          body={({ Fecha_Devolucion }) =>
-            new Date(Fecha_Devolucion).toLocaleDateString("es-MX", {
+          body={({ Fecha_Devolucion, Fecha_Adquisicion, Interno }) =>
+            new Date(
+              Interno > 0 ? Fecha_Adquisicion : Fecha_Devolucion
+            ).toLocaleDateString("es-MX", {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -123,17 +124,23 @@ function Devoluciones({ data }) {
           }
         />
         <Column
-          body={({ Id, Renovacion }) => (
-            <Button
-              label="Renovar"
-              disabled={Renovacion == 0}
-              onClick={() => RenovarLibro(Id)}
-            />
-          )}
+          body={({ Id, Renovacion, Interno }) =>
+            Interno > 0 ? null : (
+              <Button
+                label="Renovar"
+                disabled={Renovacion == 0}
+                onClick={() => RenovarLibro(Id)}
+              />
+            )
+          }
         />
         <Column
-          body={({ Id }) => (
-            <Button label="Devolver" onClick={() => DevolverLibro(Id)} />
+          body={({ Id, Interno }) => (
+            <Button
+              className={Interno > 0 ? "bg-green-400 border-green-400" : ""}
+              label="Devolver"
+              onClick={() => DevolverLibro(Id)}
+            />
           )}
         />
       </DataTable>

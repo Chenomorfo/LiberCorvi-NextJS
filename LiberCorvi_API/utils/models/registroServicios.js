@@ -5,9 +5,9 @@ import Alumnos from "./alumnos.js";
 const Registro_Servicios = DB.define(
   "Registro_Servicios",
   {
-    /* Numero_Control: {
-      type: DataTypes.STRING(12),
-      allowNull: false,
+/*     Id: {
+      autoIncrement: true,
+      primaryKey: true,
     }, */
     Servicio: {
       type: DataTypes.STRING(30),

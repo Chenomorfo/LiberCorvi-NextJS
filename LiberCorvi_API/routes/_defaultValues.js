@@ -4,12 +4,23 @@ const router = Router();
 import AlumnosJSON from "../localDB/alumnos.json" assert { type: "json" };
 import FichaLibros from "../localDB/fichalibros.json" assert { type: "json" };
 import FichaEjemplares from "../localDB/fichaejemplares.json" assert { type: "json" };
+import RFIDs from "../localDB/rfid.json" assert { type: "json" };
 
 import DB from "../db.js";
 import { verifyToken } from "../utils/controllers/authToken.js";
 
 router.get("/ping", verifyToken, async (req, res) => {
   res.send({ msg: "Pong" });
+});
+
+router.get("/rfid", async (req, res) => {
+  try {
+    await DB.rfid.bulkCreate(RFIDs);
+
+    res.send({ msg: "NFC created" });
+  } catch (error) {
+    res.send({ msg: "NFC not created", error });
+  } 
 });
 
 router.get("/users", async (req, res) => {
@@ -27,12 +38,22 @@ router.get("/users", async (req, res) => {
 
 router.get("/servicios", async (req, res) => {
   await DB.servicios.destroy({ truncate: true });
-  let servicios = []
-  for (let i = 0; i < 6; i++) { servicios.push({ Nombre: 'Mesa', Numero: i++ }) }
-  for (let i = 0; i < 2; i++) { servicios.push({ Nombre: 'Restirador', Numero: i++ }) }
-  for (let i = 0; i < 3; i++) { servicios.push({ Nombre: 'Cubiculo', Numero: i++ }) }
-  for (let i = 0; i < 13; i++) { servicios.push({ Nombre: 'Laptop', Numero: i++ }) }
-  for (let i = 0; i < 22; i++) { servicios.push({ Nombre: 'Computadora', Numero: i++ }) }
+  let servicios = [];
+  for (let i = 0; i < 6; i++) {
+    servicios.push({ Nombre: "Mesa", Numero: i++ });
+  }
+  for (let i = 0; i < 2; i++) {
+    servicios.push({ Nombre: "Restirador", Numero: i++ });
+  }
+  for (let i = 0; i < 3; i++) {
+    servicios.push({ Nombre: "Cubiculo", Numero: i++ });
+  }
+  for (let i = 0; i < 13; i++) {
+    servicios.push({ Nombre: "Laptop", Numero: i++ });
+  }
+  for (let i = 0; i < 22; i++) {
+    servicios.push({ Nombre: "Computadora", Numero: i++ });
+  }
 
   await DB.servicios.bulkCreate(servicios);
 
@@ -72,9 +93,9 @@ router.get("/fichaLibros", async (req, res) => {
     }
 
     //res.send({ msg: "Carga Finalizada" });
-    res.redirect('fichaEjemplares') 
+    res.redirect("fichaEjemplares");
   } catch (error) {
-    res.send({error})
+    res.send({ error });
   }
 });
 
@@ -90,8 +111,7 @@ router.get("/fichaEjemplares", async (req, res) => {
         await DB.fichaEjemplares.bulkCreate(FichaEjemplares.splice(-divider));
     }
 
-    res.send({ msg: "Carga Finalizada" }); 
-
+    res.send({ msg: "Carga Finalizada" });
   } catch (error) {
     res.send({ msg: "Error al cargar", error });
   }

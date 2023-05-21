@@ -50,13 +50,14 @@ router.get("/consultar/nombres", async (req, res) => {
 
 router.post("/registrar", async (req, res) => {
   const { area } = req.query;
-  const { lista, usuario } = req.body;
+  const { lista, usuario, Prestamo } = req.body;
 
   const Servicio = await DB.registroServicios.bulkCreate(
     lista.map((item) => ({
       Numero_Control: item,
       Servicio: area,
       Usuario_Registro: usuario ?? null,
+      Prestamo: Prestamo ?? null,
     }))
   );
 

@@ -15,7 +15,10 @@ const Ficha_Ejemplares = DB.define(
 
     Fecha_Modificacion: DataTypes.DATE,
 
-    Disponibilidad: DataTypes.BOOLEAN,
+    Disponibilidad: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
 
     Usuario_Registro: DataTypes.STRING(50),
   },

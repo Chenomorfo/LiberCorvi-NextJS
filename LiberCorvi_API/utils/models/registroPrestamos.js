@@ -29,6 +29,7 @@ const Registro_Prestamos = DB.define(
       type: DataTypes.DATE,
       defaultValue: addDays(new Date(), 2),
     },
+    Interno: DataTypes.BOOLEAN,
     Renovacion: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,

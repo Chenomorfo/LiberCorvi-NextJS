@@ -118,6 +118,11 @@ export default function MenuBar() {
           icon: "pi pi-fw pi-users",
           command: () => Router.push("/administracion/servicios"),
         },
+        {
+          label: "RFID",
+          icon: "pi pi-fw pi-id-card",
+          command: () => Router.push("/administracion/rfid"),
+        },
       ],
     },
     {

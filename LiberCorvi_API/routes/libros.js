@@ -15,6 +15,7 @@ router.get("/buscar/ficha", async (req, res) => {
       SELECT 	fl.Numero_Ficha,
 		          fl.Titulo,
               fl.Autor,
+              fe.Disponibilidad,
               fe.Numero_Adquisicion
 	    FROM ${DB.fichaLibros.tableName} fl JOIN ${DB.fichaEjemplares.tableName} fe ON fl.Numero_Ficha = fe.Numero_Ficha
       WHERE fl.Numero_Ficha = :buscar_ficha;`,
@@ -56,26 +57,26 @@ router.get("/consultar/ejemplar", async (req, res) => {
 
 //Completed and Tested
 router.get("/consultar/libro", async (req, res) => {
-  const { filter } = req.query;
+  const { libro, autor, contenido } = req.query;
   const Fichas = await DB.fichaLibros.findAll(
-    filter != ""
+    libro != "" || autor != "" || contenido != ""
       ? {
           limit: 50,
           where: {
-            [Op.or]: [
+            [Op.and]: [
               {
                 Titulo: {
-                  [Op.like]: `%${filter}%`,
+                  [Op.like]: `%${libro}%`,
                 },
               },
               {
                 Autor: {
-                  [Op.like]: `%${filter}%`,
+                  [Op.like]: `%${autor}%`,
                 },
               },
               {
                 Contenido: {
-                  [Op.like]: `%${filter}%`,
+                  [Op.like]: `%${contenido}%`,
                 },
               },
             ],
@@ -145,19 +146,29 @@ router.get("/consultar/prestamo/:nc", async (req, res) => {
 });
 
 router.post("/registrar/prestamo", async (req, res) => {
-  const { ficha, ejemplar, nc, Tipo, Usuario } = req.body;
+  const { ficha, ejemplar, nc, Tipo } = req.body;
 
   const Prestamo = await DB.registroPrestamos
     .create({
       Libro_Numero_Ficha: ficha,
       Libro_Numero_Ejemplar: ejemplar,
       Estudiante_Numero_Control: nc,
+      Interno: Tipo ?? false,
     })
     .catch((e) => ({
       Error: "Peticion rechazada",
       Description:
         "Uno o mas valores ingresados no fueron aceptados por falta de coincidencias",
     }));
+
+  await DB.fichaEjemplares.update(
+    { Disponibilidad: false },
+    {
+      where: {
+        [Op.and]: [{ Numero_Adquisicion: ejemplar }, { Numero_Ficha: ficha }],
+      },
+    }
+  );
 
   res.send(Prestamo);
 });
@@ -181,6 +192,18 @@ router.put("/devolver/prestamo/:id", async (req, res) => {
   const Prestamo = await DB.registroPrestamos.findOne({ where: { Id: id } });
 
   Prestamo.Devolucion = false;
+
+  await DB.fichaEjemplares.update(
+    { Disponibilidad: true },
+    {
+      where: {
+        [Op.and]: [
+          { Numero_Adquisicion: Prestamo.Libro_Numero_Ejemplar },
+          { Numero_Ficha: Prestamo.Libro_Numero_Ficha },
+        ],
+      },
+    }
+  );
 
   await Prestamo.save();
 
