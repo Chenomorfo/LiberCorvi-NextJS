@@ -1,7 +1,7 @@
 const PORT = 4200;
 
 //const DIR = "localhost";
-const DIR = "192.168.1.186";
+const DIR = "YOUR IP";
 
 export const API = `http://${DIR}:${PORT}`;
 
