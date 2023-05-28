@@ -42,7 +42,7 @@ function uid() {
 
   useEffect(() => {
     (async () => {
-      const ws = await new WebSocket("ws://192.168.1.116:3100/ws");
+      const ws = await new WebSocket("ws://ESP32-IP:3100/ws");
       await setTimeout(() => {
         if (ws.readyState > 0) {
           ws.onmessage = getMessage;
